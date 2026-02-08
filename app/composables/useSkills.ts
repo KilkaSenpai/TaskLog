@@ -12,7 +12,7 @@ export const useSkills = () => {
   const loading = useState<boolean>('skills-loading', () => false)
   const error = useState<string | null>('skills-error', () => null)
 
-  const fetchSkills = async (filters: SkillFilters = {}) => {
+  const fetchSkills = async (filters: SkillFilters = {}, userId?: string) => {
     loading.value = true
     error.value = null
 
@@ -20,6 +20,10 @@ export const useSkills = () => {
       .from('skills')
       .select('*')
       .order('created_at', { ascending: false })
+
+    if (userId) {
+      query = query.eq('user_id', userId)
+    }
 
     if (filters.status && filters.status !== 'all') {
       query = query.eq('status', filters.status)
@@ -43,12 +47,12 @@ export const useSkills = () => {
     loading.value = false
   }
 
-  const fetchSkillById = async (id: string) => {
-    const { data, error: fetchError } = await supabase
-      .from('skills')
-      .select('*')
-      .eq('id', id)
-      .single()
+  const fetchSkillById = async (id: string, userId?: string) => {
+    let query = supabase.from('skills').select('*').eq('id', id)
+    if (userId) {
+      query = query.eq('user_id', userId)
+    }
+    const { data, error: fetchError } = await query.single()
 
     if (fetchError) {
       throw new Error(fetchError.message)
@@ -80,14 +84,14 @@ export const useSkills = () => {
 
   const updateSkill = async (
     id: string,
-    payload: Partial<Omit<Skill, 'id' | 'created_at'>>
+    payload: Partial<Omit<Skill, 'id' | 'created_at'>>,
+    userId?: string
   ) => {
-    const { data, error: updateError } = await supabase
-      .from('skills')
-      .update(payload)
-      .eq('id', id)
-      .select('*')
-      .single()
+    let query = supabase.from('skills').update(payload).eq('id', id)
+    if (userId) {
+      query = query.eq('user_id', userId)
+    }
+    const { data, error: updateError } = await query.select('*').single()
 
     if (updateError) {
       throw new Error(updateError.message)
@@ -99,11 +103,12 @@ export const useSkills = () => {
     return data as Skill
   }
 
-  const deleteSkill = async (id: string) => {
-    const { error: deleteError } = await supabase
-      .from('skills')
-      .delete()
-      .eq('id', id)
+  const deleteSkill = async (id: string, userId?: string) => {
+    let query = supabase.from('skills').delete().eq('id', id)
+    if (userId) {
+      query = query.eq('user_id', userId)
+    }
+    const { error: deleteError } = await query
 
     if (deleteError) {
       throw new Error(deleteError.message)

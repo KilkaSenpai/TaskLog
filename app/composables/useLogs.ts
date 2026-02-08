@@ -6,9 +6,15 @@ export const useLogs = () => {
   const loading = useState<boolean>('logs-loading', () => false)
   const error = useState<string | null>('logs-error', () => null)
 
-  const fetchLogs = async (skillId?: string) => {
+  const fetchLogs = async (skillId?: string, skillIds?: string[]) => {
     loading.value = true
     error.value = null
+
+    if (skillIds && skillIds.length === 0) {
+      logs.value = []
+      loading.value = false
+      return
+    }
 
     let query = supabase
       .from('skill_logs')
@@ -17,6 +23,8 @@ export const useLogs = () => {
 
     if (skillId) {
       query = query.eq('skill_id', skillId)
+    } else if (skillIds && skillIds.length > 0) {
+      query = query.in('skill_id', skillIds)
     }
 
     const { data, error: fetchError } = await query

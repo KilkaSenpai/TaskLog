@@ -39,8 +39,8 @@
 <script setup lang="ts">
 const { skills, fetchSkills } = useSkills()
 const { logs, fetchLogs } = useLogs()
+const userId = useLocalUserId()
 const { pushToast } = useToasts()
-const router = useRouter()
 
 const hasActiveSkill = computed(() => {
   return (skills.value ?? []).some((skill) => skill.status === 'active')
@@ -69,11 +69,15 @@ const onMouseLeave = (event: MouseEvent) => {
 }
 
 onMounted(async () => {
-  if ((skills.value ?? []).length === 0) {
-    await fetchSkills()
-  }
-  if ((logs.value ?? []).length === 0) {
-    await fetchLogs()
+  const id = userId.value
+  if (id && id !== 'anon') {
+    if ((skills.value ?? []).length === 0) {
+      await fetchSkills({}, id)
+    }
+    if ((logs.value ?? []).length === 0) {
+      const skillIds = (skills.value ?? []).map((s) => s.id)
+      await fetchLogs(undefined, skillIds)
+    }
   }
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {

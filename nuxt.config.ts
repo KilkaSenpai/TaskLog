@@ -7,14 +7,15 @@ export default defineNuxtConfig({
   app: {
     baseURL: process.env.NODE_ENV === 'production' ? '/TaskLog/' : '/'
   },
+  vite: {
+    plugins: [tailwindcss()],
+    base: process.env.NODE_ENV === 'production' ? '/TaskLog/' : '/'
+  },
   css: ['@/assets/main.css', '@fancyapps/ui/dist/fancybox/fancybox.css'],
   postcss: {
     plugins: {
       '@tailwindcss/postcss': {}
     }
-  },
-  vite: {
-    plugins: [tailwindcss()]
   },
   experimental: {
     inlineSSRStyles: true

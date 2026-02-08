@@ -184,9 +184,9 @@ const isInitialLoading = computed(() => {
 
 
 const refreshAll = async () => {
-  await fetchSkills(filters)
+  await fetchSkills(filters, userId.value)
   skillsReady.value = true
-  await fetchLogs()
+  await fetchLogs(undefined, skills.value.map((s) => s.id))
   logsReady.value = true
   if (process.client) {
     await fetchFavorites(userId.value)
@@ -204,7 +204,7 @@ const onToggleFavorite = async (skillId: string) => {
 watch(
   () => ({ ...filters }),
   async () => {
-    await fetchSkills(filters)
+    await fetchSkills(filters, userId.value)
   }
 )
 
@@ -217,9 +217,9 @@ onMounted(async () => {
   fetch('http://127.0.0.1:7242/ingest/930a2aba-a5bc-4650-9e44-72eadb382033',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/pages/index.vue:130',message:'onMounted start',data:{isClient:process.client},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H4'})}).catch(()=>{});
   // #endregion
   await refreshAll()
-  stopSkills = subscribeToSkills(() => fetchSkills(filters))
+  stopSkills = subscribeToSkills(() => fetchSkills(filters, userId.value))
   stopLogs = subscribeToLogs(async () => {
-    await fetchLogs()
+    await fetchLogs(undefined, skills.value.map((s) => s.id))
   })
 })
 

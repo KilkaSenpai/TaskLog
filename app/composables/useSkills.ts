@@ -16,14 +16,18 @@ export const useSkills = () => {
     loading.value = true
     error.value = null
 
+    const effectiveUserId = userId && userId !== 'anon' ? userId : undefined
+    if (!effectiveUserId) {
+      skills.value = []
+      loading.value = false
+      return
+    }
+
     let query = supabase
       .from('skills')
       .select('*')
       .order('created_at', { ascending: false })
-
-    if (userId) {
-      query = query.eq('user_id', userId)
-    }
+      .eq('user_id', effectiveUserId)
 
     if (filters.status && filters.status !== 'all') {
       query = query.eq('status', filters.status)
@@ -48,11 +52,15 @@ export const useSkills = () => {
   }
 
   const fetchSkillById = async (id: string, userId?: string) => {
-    let query = supabase.from('skills').select('*').eq('id', id)
-    if (userId) {
-      query = query.eq('user_id', userId)
+    if (!userId || userId === 'anon') {
+      throw new Error('User ID required')
     }
-    const { data, error: fetchError } = await query.single()
+    const { data, error: fetchError } = await supabase
+      .from('skills')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single()
 
     if (fetchError) {
       throw new Error(fetchError.message)
@@ -87,11 +95,16 @@ export const useSkills = () => {
     payload: Partial<Omit<Skill, 'id' | 'created_at'>>,
     userId?: string
   ) => {
-    let query = supabase.from('skills').update(payload).eq('id', id)
-    if (userId) {
-      query = query.eq('user_id', userId)
+    if (!userId || userId === 'anon') {
+      throw new Error('User ID required')
     }
-    const { data, error: updateError } = await query.select('*').single()
+    const { data, error: updateError } = await supabase
+      .from('skills')
+      .update(payload)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select('*')
+      .single()
 
     if (updateError) {
       throw new Error(updateError.message)
@@ -104,11 +117,14 @@ export const useSkills = () => {
   }
 
   const deleteSkill = async (id: string, userId?: string) => {
-    let query = supabase.from('skills').delete().eq('id', id)
-    if (userId) {
-      query = query.eq('user_id', userId)
+    if (!userId || userId === 'anon') {
+      throw new Error('User ID required')
     }
-    const { error: deleteError } = await query
+    const { error: deleteError } = await supabase
+      .from('skills')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId)
 
     if (deleteError) {
       throw new Error(deleteError.message)

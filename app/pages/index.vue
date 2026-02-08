@@ -130,25 +130,16 @@ const logsReady = ref(false)
 const hydrated = ref(false)
 
 const skillsList = computed(() => {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/930a2aba-a5bc-4650-9e44-72eadb382033',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/pages/index.vue:75',message:'compute skillsList',data:{skillsType:typeof skills.value,skillsIsArray:Array.isArray(skills.value)},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H3'})}).catch(()=>{});
-  // #endregion
   const list = skills.value ?? []
   if (!filters.favoritesOnly) return list
   return list.filter((skill) => favoriteIds.value.has(skill.id))
 })
 
 const favoriteIds = computed(() => {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/930a2aba-a5bc-4650-9e44-72eadb382033',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/pages/index.vue:81',message:'compute favoriteIds',data:{favoritesType:typeof favorites.value,favoritesIsArray:Array.isArray(favorites.value)},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H1'})}).catch(()=>{});
-  // #endregion
   return new Set(favorites.value.map((item) => item.skill_id))
 })
 
 const logCountBySkill = computed(() => {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/930a2aba-a5bc-4650-9e44-72eadb382033',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/pages/index.vue:88',message:'compute logCountBySkill',data:{logsType:typeof logs.value,logsIsArray:Array.isArray(logs.value)},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H2'})}).catch(()=>{});
-  // #endregion
   return logs.value.reduce<Record<string, number>>((acc, log) => {
     acc[log.skill_id] = (acc[log.skill_id] || 0) + 1
     return acc
@@ -191,9 +182,6 @@ const refreshAll = async () => {
   if (process.client) {
     await fetchFavorites(userId.value)
   }
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/930a2aba-a5bc-4650-9e44-72eadb382033',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/pages/index.vue:113',message:'after refreshAll',data:{skillsIsArray:Array.isArray(skills.value),logsIsArray:Array.isArray(logs.value),favoritesIsArray:Array.isArray(favorites.value),isClient:process.client},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H4'})}).catch(()=>{});
-  // #endregion
 }
 
 const onToggleFavorite = async (skillId: string) => {
@@ -213,9 +201,6 @@ let stopLogs: (() => void) | null = null
 
 onMounted(async () => {
   hydrated.value = true
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/930a2aba-a5bc-4650-9e44-72eadb382033',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/pages/index.vue:130',message:'onMounted start',data:{isClient:process.client},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H4'})}).catch(()=>{});
-  // #endregion
   await refreshAll()
   stopSkills = subscribeToSkills(() => fetchSkills(filters, userId.value))
   stopLogs = subscribeToLogs(async () => {

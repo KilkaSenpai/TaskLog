@@ -253,7 +253,7 @@ const loadSkill = async () => {
   loadingSkill.value = true
   skillError.value = null
   try {
-    const data = await fetchSkillById(route.params.id as string)
+    const data = await fetchSkillById(route.params.id as string, userId.value)
     skill.value = data
     resetForm()
   } catch (err) {
@@ -275,12 +275,16 @@ const onSave = async () => {
   saving.value = true
   saveError.value = null
   try {
-    const updated = await updateSkill(skill.value.id, {
-      title: form.title.trim(),
-      description: form.description.trim() || null,
-      level: form.level,
-      status: form.status
-    })
+    const updated = await updateSkill(
+      skill.value.id,
+      {
+        title: form.title.trim(),
+        description: form.description.trim() || null,
+        level: form.level,
+        status: form.status
+      },
+      userId.value
+    )
     skill.value = updated
     pushToast({
       message: 'Успішно збережено!',
@@ -298,7 +302,7 @@ const onDelete = async () => {
   const confirmed = confirm('Видалити цю задачу та всі записи?')
   if (!confirmed) return
   try {
-    await deleteSkill(skill.value.id)
+    await deleteSkill(skill.value.id, userId.value)
     await router.push('/')
   } catch (err) {
     saveError.value = err instanceof Error ? err.message : 'Unknown error'

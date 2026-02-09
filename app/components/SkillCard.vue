@@ -30,6 +30,18 @@
         Записи: {{ logCount }}
       </NuxtLink>
     </div>
+    <div v-if="skill.estimate_minutes && skill.estimate_minutes > 0" class="mt-3">
+      <div class="mb-1 flex justify-between text-xs text-slate-500">
+        <span>Прогрес: {{ totalMinutes }} / {{ skill.estimate_minutes }} хв</span>
+        <span>{{ progressPercent }}%</span>
+      </div>
+      <div class="h-1.5 overflow-hidden rounded-full bg-slate-200">
+        <div
+          class="h-full rounded-full bg-indigo-500 transition-all"
+          :style="{ width: `${Math.min(progressPercent, 100)}%` }"
+        />
+      </div>
+    </div>
     <div class="mt-auto pt-3">
       <NuxtLink
         :to="`/skills/${skill.id}`"
@@ -49,7 +61,14 @@ const props = defineProps<{
   skill: Skill
   isFavorite: boolean
   logCount: number
+  totalMinutes: number
 }>()
+
+const progressPercent = computed(() => {
+  const est = props.skill.estimate_minutes
+  if (!est || est <= 0) return 0
+  return Math.round((props.totalMinutes / est) * 100)
+})
 
 defineEmits<{
   (event: 'toggle-favorite'): void

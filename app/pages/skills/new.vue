@@ -23,6 +23,10 @@
           Опис
           <UiTextarea v-model="form.description" rows="4" />
         </label>
+        <label class="grid gap-2 text-sm font-medium text-slate-700">
+          Оцінка часу (хв)
+          <UiInput v-model.number="form.estimateMinutes" type="number" min="0" placeholder="Наприклад 120" />
+        </label>
         <div class="grid gap-4 md:grid-cols-2">
           <label class="grid gap-2 text-sm font-medium text-slate-700">
             Рівень складності
@@ -66,11 +70,13 @@ const form = reactive<{
   description: string
   level: SkillLevel
   status: SkillStatus
+  estimateMinutes: number | null
 }>({
   title: '',
   description: '',
   level: 'easy',
-  status: 'planned'
+  status: 'planned',
+  estimateMinutes: null
 })
 
 const saving = ref(false)
@@ -86,7 +92,8 @@ const onSubmit = async () => {
       description: form.description.trim() || null,
       level: form.level,
       status: form.status,
-      user_id: userId.value
+      user_id: userId.value,
+      estimate_minutes: form.estimateMinutes && form.estimateMinutes > 0 ? form.estimateMinutes : null
     })
     await router.push(`/skills/${created.id}`)
   } catch (err) {

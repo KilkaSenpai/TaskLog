@@ -17,9 +17,6 @@ export default defineNuxtConfig({
       '@tailwindcss/postcss': {}
     }
   },
-  experimental: {
-    inlineSSRStyles: true
-  },
   runtimeConfig: {
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || '',

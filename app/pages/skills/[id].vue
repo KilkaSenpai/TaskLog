@@ -67,6 +67,9 @@
             Опис
             <UiTextarea v-model="form.description" rows="4" />
           </label>
+          <p v-if="skill.estimate_minutes" class="text-sm text-slate-600">
+            Оцінка часу: <strong>{{ skill.estimate_minutes }} хв</strong>
+          </p>
           <div class="grid gap-4 md:grid-cols-2">
             <label class="grid gap-2 text-sm font-medium text-slate-700">
               Рівень складності
@@ -100,6 +103,21 @@
       </UiCard>
 
       <div class="grid gap-6">
+        <UiCard v-if="skill.estimate_minutes && skill.estimate_minutes > 0" class="p-6">
+          <h2 class="text-lg font-semibold text-slate-900">Прогрес</h2>
+          <div class="mt-3">
+            <div class="mb-1 flex justify-between text-sm text-slate-600">
+              <span>{{ totalMinutes }} / {{ skill.estimate_minutes }} хв</span>
+              <span>{{ progressPercent }}%</span>
+            </div>
+            <div class="h-2 overflow-hidden rounded-full bg-slate-200">
+              <div
+                class="h-full rounded-full bg-indigo-500 transition-all"
+                :style="{ width: `${Math.min(progressPercent, 100)}%` }"
+              />
+            </div>
+          </div>
+        </UiCard>
         <UiCard class="p-6">
           <h2 class="text-lg font-semibold text-slate-900">Записати прогрес</h2>
           <form class="mt-4 grid gap-4" @submit.prevent="onLog">
@@ -122,7 +140,7 @@
           <div class="flex items-center justify-between gap-3">
             <h2 class="text-lg font-semibold text-slate-900">Історія прогресу</h2>
             <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600">
-              Всього хвилин: {{ totalMinutes }}
+              {{ skill.estimate_minutes ? `${totalMinutes} / ${skill.estimate_minutes} хв` : `Всього хвилин: ${totalMinutes}` }}
             </span>
           </div>
           <div
@@ -235,6 +253,12 @@ const isFavorite = computed(() => {
 
 const totalMinutes = computed(() => {
   return logs.value.reduce((sum, log) => sum + (log.minutes || 0), 0)
+})
+
+const progressPercent = computed(() => {
+  const est = skill.value?.estimate_minutes
+  if (!est || est <= 0) return 0
+  return Math.round((totalMinutes.value / est) * 100)
 })
 
 const formatDate = (iso: string) => {

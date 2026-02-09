@@ -4,8 +4,8 @@ App for creating tasks, logging progress, favorites, and weekly stats. UI is in 
 
 ## Features
 
-- **Tasks** — create, edit, delete with difficulty levels (Easy / Medium / Hard) and statuses
-- **Progress logs** — log time in minutes with notes
+- **Tasks** — create, edit, delete with difficulty levels (Easy / Medium / Hard), statuses, and time estimate
+- **Progress logs** — log time in minutes with notes; progress bar when estimate is set
 - **Favorites** — add tasks to favorites (heart icon), “Favorites only” filter
 - **Weekly stats** — minutes per week, active and total task counts
 - **Realtime** — instant updates on changes (Supabase)
@@ -41,7 +41,8 @@ create table if not exists skills (
   level text not null default 'easy',
   status text not null default 'planned',
   created_at timestamptz not null default now(),
-  user_id text
+  user_id text,
+  estimate_minutes int default null
 );
 
 create table if not exists skill_logs (
@@ -57,6 +58,13 @@ create table if not exists favorites (
   skill_id uuid references skills(id) on delete cascade,
   user_id text not null
 );
+```
+
+For existing projects — add `estimate_minutes` column:
+
+```sql
+ALTER TABLE skills
+ADD COLUMN IF NOT EXISTS estimate_minutes integer DEFAULT null;
 ```
 
 3. Enable Realtime for `skills` and `skill_logs`

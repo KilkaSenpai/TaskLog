@@ -75,6 +75,7 @@ export const useSkills = () => {
     level: SkillLevel
     status: SkillStatus
     user_id: string
+    estimate_minutes?: number | null
   }) => {
     const { data, error: insertError } = await supabase
       .from('skills')

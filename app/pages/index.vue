@@ -98,6 +98,7 @@
           :skill="skill"
           :is-favorite="favoriteIds.has(skill.id)"
           :log-count="logCountBySkill[skill.id] || 0"
+          :total-minutes="totalMinutesBySkill[skill.id] || 0"
           @toggle-favorite="onToggleFavorite(skill.id)"
         />
       </div>
@@ -142,6 +143,13 @@ const favoriteIds = computed(() => {
 const logCountBySkill = computed(() => {
   return logs.value.reduce<Record<string, number>>((acc, log) => {
     acc[log.skill_id] = (acc[log.skill_id] || 0) + 1
+    return acc
+  }, {})
+})
+
+const totalMinutesBySkill = computed(() => {
+  return logs.value.reduce<Record<string, number>>((acc, log) => {
+    acc[log.skill_id] = (acc[log.skill_id] || 0) + (log.minutes || 0)
     return acc
   }, {})
 })

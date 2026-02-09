@@ -9,6 +9,7 @@ export type Skill = {
   status: SkillStatus
   created_at: string
   user_id: string | null
+  estimate_minutes?: number | null
 }
 
 export type SkillLog = {

@@ -4,6 +4,7 @@ App for creating tasks, logging progress, favorites, and weekly stats. UI is in 
 
 ## Features
 
+- **Auth** — Supabase Auth: login and sign-up modals (email or username + password), Ukrainian UI. Forgot password (email → link → set new password on `/reset-password`, then sign in). Display name at registration. Toasts by type (success / danger / info–warning with icons and borders).
 - **Tasks** — create, edit, delete with difficulty levels (Easy / Medium / Hard), statuses, and time estimate
 - **Progress logs** — log time in minutes with notes; progress bar when estimate is set
 - **Favorites** — add tasks to favorites (heart icon), “Favorites only” filter
@@ -31,7 +32,7 @@ npm install
 ### 2. Supabase
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. In SQL Editor run:
+2. In SQL Editor run the tables (skills, skill_logs, favorites):
 
 ```sql
 create table if not exists skills (
@@ -60,15 +61,33 @@ create table if not exists favorites (
 );
 ```
 
-For existing projects — add `estimate_minutes` column:
+3. **Auth: create `profiles` table** (required for login/register). Run in SQL Editor:
+
+```sql
+create table if not exists public.profiles (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  username text not null unique,
+  email text,
+  display_name text,
+  created_at timestamptz not null default now()
+);
+```
+
+4. In Supabase Dashboard: enable **Authentication** (Email provider). In **URL Configuration** add your reset-password URL to **Redirect URLs** (e.g. `http://localhost:3000/reset-password` and your production URL). Optionally customize **Email** templates (Confirm signup, Reset password) in Ukrainian. Enable Realtime for `skills` and `skill_logs`. If using RLS — add policies for `skills`, `skill_logs`, `favorites`, and `profiles` (e.g. users can read/write own rows).
+
+For existing projects — add `estimate_minutes` to skills if missing:
 
 ```sql
 ALTER TABLE skills
 ADD COLUMN IF NOT EXISTS estimate_minutes integer DEFAULT null;
 ```
 
-3. Enable Realtime for `skills` and `skill_logs`
-4. If using RLS — add policies or disable it for prototyping
+If `profiles` already exists without `email`, add the column:
+
+```sql
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS email text;
+```
 
 ### 3. Environment variables
 
@@ -101,6 +120,7 @@ App runs at [http://localhost:3000](http://localhost:3000)
 | Path | Description |
 |------|-------------|
 | `/` | Task list, filters, weekly stats |
+| `/reset-password` | Set new password (from email link); then redirect to login |
 | `/skills/new` | Create new task |
 | `/skills/:id` | Details, edit, logs, favorites, tips |
 
@@ -116,8 +136,8 @@ app/
 │   ├── StatusBadge.vue
 │   ├── WeeklySummary.vue
 │   └── ...
-├── composables/     # useSkills, useLogs, useFavorites, useToasts
-├── pages/           # Pages (index, skills/new, skills/[id])
+├── composables/     # useAuth, useSkills, useLogs, useFavorites, useToasts, useSupabase
+├── pages/           # Pages (index, reset-password, skills/new, skills/[id])
 ├── plugins/         # Fancybox etc.
 └── types/           # TypeScript types
 ```

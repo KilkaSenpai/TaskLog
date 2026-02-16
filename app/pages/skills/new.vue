@@ -61,8 +61,8 @@
 <script setup lang="ts">
 import type { SkillLevel, SkillStatus } from '@/types/skill'
 
+const { authUser, openAuth } = useAuth()
 const { createSkill } = useSkills()
-const userId = useLocalUserId()
 const router = useRouter()
 
 const form = reactive<{
@@ -84,6 +84,11 @@ const error = ref<string | null>(null)
 
 const onSubmit = async () => {
   if (!form.title.trim()) return
+  const id = authUser.value?.id
+  if (!id) {
+    openAuth('register')
+    return
+  }
   saving.value = true
   error.value = null
   try {
@@ -92,7 +97,7 @@ const onSubmit = async () => {
       description: form.description.trim() || null,
       level: form.level,
       status: form.status,
-      user_id: userId.value,
+      user_id: id,
       estimate_minutes: form.estimateMinutes && form.estimateMinutes > 0 ? form.estimateMinutes : null
     })
     await router.push(`/skills/${created.id}`)

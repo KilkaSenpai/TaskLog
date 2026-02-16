@@ -11,21 +11,32 @@
           </span>
           TaskLog
         </NuxtLink>
-        <nav class="flex items-center gap-2">
-          <NuxtLink
-            to="/"
-            class="rounded-full px-3 py-1.5 text-sm font-semibold text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-600"
-            active-class="bg-indigo-100 text-indigo-700"
-          >
-            Задачі
-          </NuxtLink>
-          <NuxtLink
-            to="/skills/new"
-            class="rounded-full px-3 py-1.5 text-sm font-semibold text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-600"
-            active-class="bg-indigo-100 text-indigo-700"
-          >
-            Нова задача
-          </NuxtLink>
+        <nav class="flex items-center gap-1 sm:gap-2">
+          <template v-if="isLoggedIn">
+            <button
+              type="button"
+              class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 cursor-pointer"
+              @click="logout"
+            >
+              Вийти
+            </button>
+          </template>
+          <template v-else>
+            <button
+              type="button"
+              class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 cursor-pointer"
+              @click="openAuth('login')"
+            >
+              Увійти
+            </button>
+            <button
+              type="button"
+              class="ml-1 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 cursor-pointer"
+              @click="openAuth('register')"
+            >
+              Реєстрація
+            </button>
+          </template>
         </nav>
       </div>
     </header>
@@ -33,14 +44,35 @@
       <NuxtPage />
     </main>
     <ToastHost />
+    <AuthModal />
   </div>
 </template>
 
 <script setup lang="ts">
+const route = useRoute()
+const { authUser, initAuth, openAuth, logout } = useAuth()
+
+const showAuthInHeader = computed(() => route.path !== '/reset-password')
+const isLoggedIn = computed(() => showAuthInHeader.value && !!authUser.value)
 const { skills, fetchSkills } = useSkills()
 const { logs, fetchLogs } = useLogs()
-const userId = useLocalUserId()
 const { pushToast } = useToasts()
+
+async function refreshDataForUser(userId: string) {
+  await fetchSkills({}, userId)
+  const skillIds = (skills.value ?? []).map((s) => s.id)
+  await fetchLogs(undefined, skillIds)
+}
+
+watch(
+  () => authUser.value?.id,
+  (id) => {
+    if (id && process.client) {
+      refreshDataForUser(id)
+    }
+  },
+  { immediate: false }
+)
 
 const hasActiveSkill = computed(() => {
   return (skills.value ?? []).some((skill) => skill.status === 'active')
@@ -69,8 +101,9 @@ const onMouseLeave = (event: MouseEvent) => {
 }
 
 onMounted(async () => {
-  const id = userId.value
-  if (id && id !== 'anon') {
+  await initAuth()
+  const id = authUser.value?.id
+  if (id) {
     if ((skills.value ?? []).length === 0) {
       await fetchSkills({}, id)
     }

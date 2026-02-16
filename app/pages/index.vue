@@ -109,10 +109,10 @@
 <script setup lang="ts">
 import type { SkillLevel, SkillStatus } from '@/types/skill'
 
+const { authUser, openAuth } = useAuth()
 const { skills, loading, error, fetchSkills, subscribeToSkills } = useSkills()
 const { logs, loading: logsLoading, fetchLogs, subscribeToLogs } = useLogs()
 const { favorites, fetchFavorites, toggleFavorite } = useFavorites()
-const userId = useLocalUserId()
 
 const filters = reactive<{
   status: SkillStatus | 'all'
@@ -183,24 +183,30 @@ const isInitialLoading = computed(() => {
 
 
 const refreshAll = async () => {
-  await fetchSkills(filters, userId.value)
+  const id = authUser.value?.id
+  await fetchSkills(filters, id)
   skillsReady.value = true
   await fetchLogs(undefined, skills.value.map((s) => s.id))
   logsReady.value = true
-  if (process.client) {
-    await fetchFavorites(userId.value)
+  if (process.client && id) {
+    await fetchFavorites(id)
   }
 }
 
 const onToggleFavorite = async (skillId: string) => {
   if (!process.client) return
-  await toggleFavorite(skillId, userId.value)
+  const id = authUser.value?.id
+  if (!id) {
+    openAuth('login')
+    return
+  }
+  await toggleFavorite(skillId, id)
 }
 
 watch(
   () => ({ ...filters }),
   async () => {
-    await fetchSkills(filters, userId.value)
+    await fetchSkills(filters, authUser.value?.id)
   }
 )
 
@@ -210,7 +216,7 @@ let stopLogs: (() => void) | null = null
 onMounted(async () => {
   hydrated.value = true
   await refreshAll()
-  stopSkills = subscribeToSkills(() => fetchSkills(filters, userId.value))
+  stopSkills = subscribeToSkills(() => fetchSkills(filters, authUser.value?.id))
   stopLogs = subscribeToLogs(async () => {
     await fetchLogs(undefined, skills.value.map((s) => s.id))
   })

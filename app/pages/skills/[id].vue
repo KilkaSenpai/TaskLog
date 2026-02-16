@@ -209,11 +209,11 @@ import { ArrowLeft, Heart, Info } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
+const { authUser, openAuth } = useAuth()
 const { fetchSkillById, updateSkill, deleteSkill } = useSkills()
 const { logs, fetchLogs, createLog, deleteLog, subscribeToLogs, loading, error } =
   useLogs()
 const { favorites, fetchFavorites, toggleFavorite } = useFavorites()
-const userId = useLocalUserId()
 
 const { pushToast } = useToasts()
 
@@ -274,10 +274,16 @@ const resetForm = () => {
 }
 
 const loadSkill = async () => {
+  const id = authUser.value?.id
+  if (!id) {
+    skillError.value = 'Увійдіть, щоб переглянути задачу.'
+    loadingSkill.value = false
+    return
+  }
   loadingSkill.value = true
   skillError.value = null
   try {
-    const data = await fetchSkillById(route.params.id as string, userId.value)
+    const data = await fetchSkillById(route.params.id as string, id)
     skill.value = data
     resetForm()
   } catch (err) {
@@ -289,6 +295,11 @@ const loadSkill = async () => {
 
 const onSave = async () => {
   if (!skill.value) return
+  const id = authUser.value?.id
+  if (!id) {
+    openAuth('login')
+    return
+  }
   if (form.status === 'done' && logs.value.length === 0) {
     pushToast({
       message: 'Додайте хоча б один запис перед позначенням як виконано.',
@@ -307,7 +318,7 @@ const onSave = async () => {
         level: form.level,
         status: form.status
       },
-      userId.value
+      id
     )
     skill.value = updated
     pushToast({
@@ -323,10 +334,15 @@ const onSave = async () => {
 
 const onDelete = async () => {
   if (!skill.value) return
+  const id = authUser.value?.id
+  if (!id) {
+    openAuth('login')
+    return
+  }
   const confirmed = confirm('Видалити цю задачу та всі записи?')
   if (!confirmed) return
   try {
-    await deleteSkill(skill.value.id, userId.value)
+    await deleteSkill(skill.value.id, id)
     await router.push('/')
   } catch (err) {
     saveError.value = err instanceof Error ? err.message : 'Unknown error'
@@ -357,15 +373,20 @@ const onDeleteLog = async (logId: string) => {
 
 const onToggleFavorite = async () => {
   if (!skill.value || !process.client) return
-  await toggleFavorite(skill.value.id, userId.value)
+  const id = authUser.value?.id
+  if (!id) {
+    openAuth('login')
+    return
+  }
+  await toggleFavorite(skill.value.id, id)
 }
 
 let stopLogs: (() => void) | null = null
 
 onMounted(async () => {
   await loadSkill()
-  if (process.client) {
-    await fetchFavorites(userId.value)
+  if (process.client && authUser.value?.id) {
+    await fetchFavorites(authUser.value.id)
   }
   await fetchLogs(route.params.id as string)
   stopLogs = subscribeToLogs(() => fetchLogs(route.params.id as string))

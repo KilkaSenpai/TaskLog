@@ -261,8 +261,15 @@ export const useAuth = () => {
 
   const resetPassword = async (email: string) => {
     if (!email?.trim()) return
+    let redirectTo: string | undefined
+    if (typeof window !== 'undefined') {
+      const config = useRuntimeConfig()
+      const base = (config.app?.baseURL as string) || '/'
+      const path = base === '/' ? '/reset-password' : `${base.replace(/\/$/, '')}/reset-password`
+      redirectTo = `${window.location.origin}${path}`
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/reset-password` : undefined
+      redirectTo
     })
     if (error) {
       pushToast({

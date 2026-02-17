@@ -16,6 +16,22 @@
   --ring: rgba(67, 56, 202, 0.22);
 }
 
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #020617;
+  --surface: #020617;
+  --surface-elev: #020617;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --border: #1f2937;
+  --primary: #6366f1;
+  --primary-strong: #4f46e5;
+  --success: #22c55e;
+  --warning: #facc15;
+  --danger: #f97373;
+  --ring: rgba(129, 140, 248, 0.45);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -28,6 +44,10 @@ body {
   min-height: 100vh;
 }
 
+:root[data-theme='dark'] body {
+  background: radial-gradient(circle at top, #020617 0%, var(--bg) 55%);
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -37,6 +57,68 @@ a {
   color: #ffffff;
 }
 
+/* Dark theme overrides for common utility classes */
+:root[data-theme='dark'] .bg-white,
+:root[data-theme='dark'] .bg-white\/80,
+:root[data-theme='dark'] .bg-slate-50,
+:root[data-theme='dark'] .bg-slate-100 {
+  background-color: var(--surface-elev) !important;
+}
+
+:root[data-theme='dark'] .bg-white\/90 {
+  background-color: color-mix(in srgb, var(--surface-elev) 90%, #0b1120) !important;
+}
+
+:root[data-theme='dark'] .border-slate-200,
+:root[data-theme='dark'] .border-slate-300,
+:root[data-theme='dark'] .border-rose-200,
+:root[data-theme='dark'] .border-amber-200,
+:root[data-theme='dark'] .border-slate-100 {
+  border-color: var(--border) !important;
+}
+
+:root[data-theme='dark'] .text-slate-900,
+:root[data-theme='dark'] .text-slate-800,
+:root[data-theme='dark'] .text-slate-700,
+:root[data-theme='dark'] .text-slate-600 {
+  color: var(--text) !important;
+}
+
+:root[data-theme='dark'] .text-slate-500,
+:root[data-theme='dark'] .text-slate-400 {
+  color: var(--muted) !important;
+}
+
+:root[data-theme='dark'] .bg-indigo-50 {
+  background-color: rgba(79, 70, 229, 0.16) !important;
+}
+
+:root[data-theme='dark'] .bg-slate-900\/40 {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+}
+
+:root[data-theme='dark'] .shadow-sm,
+:root[data-theme='dark'] .shadow-lg {
+  --tw-shadow-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Form controls in dark mode */
+:root[data-theme='dark'] input,
+:root[data-theme='dark'] select,
+:root[data-theme='dark'] textarea {
+  background-color: #020617;
+  color: var(--text);
+}
+
+:root[data-theme='dark'] input::placeholder,
+:root[data-theme='dark'] textarea::placeholder {
+  color: #6b7280;
+}
+
+:root[data-theme='dark'] .focus\:ring-indigo-500\/10:focus {
+  --tw-ring-color: rgba(129, 140, 248, 0.35);
+}
+
 .skeleton-card {
   position: relative;
   overflow: hidden;
@@ -44,7 +126,7 @@ a {
 
 .skeleton-line,
 .skeleton-pill {
-  background: #e2e8f0;
+  background: #e5e7eb;
   border-radius: 999px;
   height: 12px;
   position: relative;
@@ -60,6 +142,11 @@ a {
   height: 18px;
 }
 
+:root[data-theme='dark'] .skeleton-line,
+:root[data-theme='dark'] .skeleton-pill {
+  background: #0f172a;
+}
+
 .skeleton-line::after,
 .skeleton-pill::after,
 .skeleton-card::after {
@@ -72,7 +159,7 @@ a {
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.7),
+    rgba(255, 255, 255, 0.35),
     rgba(255, 255, 255, 0)
   );
   animation: skeleton-shimmer 1.2s infinite;
@@ -108,4 +195,26 @@ a {
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
   overflow: hidden;
   font-family: inherit;
+}
+
+/* Skill progress bar (cards on list) */
+.skill-progress-track {
+  background-color: #e5e7eb;
+}
+
+:root[data-theme='dark'] .skill-progress-track {
+  background-color: #111827;
+}
+
+/* Progress bar on task edit page — fill color #2f3d50 */
+.skill-detail-progress-track {
+  background-color: #e5e7eb;
+}
+
+:root[data-theme='dark'] .skill-detail-progress-track {
+  background-color: #1f2937;
+}
+
+.skill-detail-progress-fill {
+  background-color: #2f3d50;
 }

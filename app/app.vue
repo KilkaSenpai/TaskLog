@@ -12,6 +12,15 @@
           TaskLog
         </NuxtLink>
         <nav class="flex items-center gap-1 sm:gap-2">
+          <button
+            type="button"
+            class="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-white/80 text-slate-600 shadow-sm transition-colors hover:bg-slate-100 cursor-pointer"
+            :aria-label="theme === 'dark' ? 'Переключити на світлу тему' : 'Переключити на темну тему'"
+            @click="toggleTheme"
+          >
+            <Moon v-if="theme === 'dark'" class="h-4 w-4" />
+            <Sun v-else class="h-4 w-4" />
+          </button>
           <template v-if="isLoggedIn">
             <button
               type="button"
@@ -49,6 +58,8 @@
 </template>
 
 <script setup lang="ts">
+import { Moon, Sun } from 'lucide-vue-next'
+
 const route = useRoute()
 const { authUser, initAuth, openAuth, logout } = useAuth()
 
@@ -57,6 +68,23 @@ const isLoggedIn = computed(() => showAuthInHeader.value && !!authUser.value)
 const { skills, fetchSkills } = useSkills()
 const { logs, fetchLogs } = useLogs()
 const { pushToast } = useToasts()
+
+type ThemeMode = 'light' | 'dark'
+const theme = ref<ThemeMode>('light')
+
+const applyTheme = (mode: ThemeMode) => {
+  if (!process.client) return
+  const root = document.documentElement
+  root.setAttribute('data-theme', mode)
+}
+
+const toggleTheme = () => {
+  theme.value = theme.value === 'light' ? 'dark' : 'light'
+  if (process.client) {
+    localStorage.setItem('tasklog-theme', theme.value)
+  }
+  applyTheme(theme.value)
+}
 
 async function refreshDataForUser(userId: string) {
   await fetchSkills({}, userId)
@@ -101,6 +129,16 @@ const onMouseLeave = (event: MouseEvent) => {
 }
 
 onMounted(async () => {
+  if (process.client) {
+    const stored = localStorage.getItem('tasklog-theme')
+    if (stored === 'light' || stored === 'dark') {
+      theme.value = stored
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      theme.value = 'dark'
+    }
+    applyTheme(theme.value)
+  }
+
   await initAuth()
   const id = authUser.value?.id
   if (id) {

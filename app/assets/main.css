@@ -229,3 +229,49 @@ a {
 :root[data-theme='dark'] .timer-bar span {
   color: var(--text);
 }
+
+/* Кнопка «Скасувати» у модалці відновлення пароля — у темній темі білий текст на темному фоні */
+:root[data-theme='dark'] .auth-modal-cancel,
+:root[data-theme='dark'] .auth-modal-cancel:hover {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+:root[data-theme='dark'] .auth-modal-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Активний таб у модалці авторизації — у темній темі як кнопка скидання (білий текст, світлий контур) */
+:root[data-theme='dark'] .auth-modal-tab-active {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+:root[data-theme='dark'] .auth-modal-tabs {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+:root[data-theme='dark'] .auth-modal-tab:not(.auth-modal-tab-active) {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Тости в темній темі */
+:root[data-theme='dark'] .toast-item {
+  background-color: #1e1b4b !important;
+  border-color: var(--border);
+}
+:root[data-theme='dark'] .toast-item.border-emerald-500 {
+  border-color: rgba(52, 211, 153, 0.5);
+}
+:root[data-theme='dark'] .toast-item.border-rose-500 {
+  border-color: rgba(248, 113, 113, 0.5);
+}
+:root[data-theme='dark'] .toast-item.border-amber-500 {
+  border-color: rgba(251, 191, 36, 0.5);
+}
+:root[data-theme='dark'] .toast-title,
+:root[data-theme='dark'] .toast-message,
+:root[data-theme='dark'] .toast-close {
+  color: var(--text) !important;
+}
+:root[data-theme='dark'] .toast-message {
+  color: var(--muted) !important;
+}

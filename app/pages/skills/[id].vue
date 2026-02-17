@@ -241,6 +241,8 @@
 import type { Skill, SkillLevel, SkillStatus } from '@/types/skill'
 import { ArrowLeft, Heart, Info, Timer } from 'lucide-vue-next'
 
+definePageMeta({ middleware: ['auth'] })
+
 const route = useRoute()
 const router = useRouter()
 const { authUser, openAuth } = useAuth()

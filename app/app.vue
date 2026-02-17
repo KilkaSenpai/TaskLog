@@ -25,7 +25,7 @@
             <button
               type="button"
               class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 cursor-pointer"
-              @click="logout"
+              @click="onLogout"
             >
               Вийти
             </button>
@@ -69,7 +69,10 @@
         </UiButton>
       </div>
     </div>
-    <main class="mx-auto w-full max-w-6xl px-6 py-8">
+    <main
+      class="mx-auto w-full max-w-6xl"
+      :class="isLanding ? '' : 'px-6 py-8'"
+    >
       <NuxtPage />
     </main>
     <ToastHost />
@@ -85,6 +88,7 @@ const { authUser, initAuth, openAuth, logout } = useAuth()
 
 const showAuthInHeader = computed(() => route.path !== '/reset-password')
 const isLoggedIn = computed(() => showAuthInHeader.value && !!authUser.value)
+const isLanding = computed(() => route.path === '/' && !authUser.value)
 const { skills, fetchSkills } = useSkills()
 const { logs, fetchLogs, createLog } = useLogs()
 const { pushToast } = useToasts()
@@ -94,6 +98,12 @@ const {
   elapsedMinutes: timerElapsedMinutes,
   stop: stopTimer
 } = useTaskTimer()
+
+const onLogout = async () => {
+  stopTimer()
+  await logout()
+  await navigateTo('/')
+}
 
 const onStopTimerFromHeader = async () => {
   const minutes = Math.max(1, timerElapsedMinutes.value)

@@ -1,5 +1,7 @@
 <template>
   <div>
+    <LandingView v-if="!authUser" />
+    <template v-else>
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
       <div>
         <h1 class="text-3xl font-semibold text-slate-900">TaskLog</h1>
@@ -103,6 +105,7 @@
         />
       </div>
     </section>
+    </template>
   </div>
 </template>
 

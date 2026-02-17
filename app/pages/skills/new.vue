@@ -61,6 +61,8 @@
 <script setup lang="ts">
 import type { SkillLevel, SkillStatus } from '@/types/skill'
 
+definePageMeta({ middleware: ['auth'] })
+
 const { authUser, openAuth } = useAuth()
 const { createSkill } = useSkills()
 const router = useRouter()

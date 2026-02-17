@@ -3,7 +3,7 @@
     <div
       v-for="toast in toasts"
       :key="toast.id"
-      class="rounded-2xl border-2 bg-white/95 p-4 shadow-lg"
+      class="toast-item rounded-2xl border-2 bg-white/95 p-4 shadow-lg"
       :class="toneClass(toast.tone)"
     >
       <div class="flex items-start justify-between gap-3">
@@ -23,11 +23,11 @@
           <div>
             <p
               v-if="toast.title"
-              class="text-sm font-semibold text-slate-900"
+              class="toast-title text-sm font-semibold text-slate-900"
             >
               {{ toast.title }}
             </p>
-            <p class="mt-1 text-sm text-slate-500">
+            <p class="toast-message mt-1 text-sm text-slate-500">
               {{ toast.message }}
             </p>
           </div>
@@ -35,7 +35,7 @@
         <UiButton
           variant="ghost"
           size="sm"
-          class="h-8 w-8 rounded-full p-0 text-slate-500"
+          class="toast-close h-8 w-8 rounded-full p-0 text-slate-500"
           @click="removeToast(toast.id)"
         >
           ✕

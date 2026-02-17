@@ -119,6 +119,40 @@
           </div>
         </UiCard>
         <UiCard class="p-6">
+          <h2 class="text-lg font-semibold text-slate-900">Таймер</h2>
+          <p class="mt-1 text-sm text-slate-500">
+            Запустіть таймер і зупиніть — час автоматично додасться в прогрес.
+          </p>
+          <div v-if="isOtherRunning(skill.id)" class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Зараз трекається задача «{{ runningTask?.title }}».
+            <NuxtLink :to="`/skills/${runningTask?.skillId}`" class="font-medium text-amber-900 underline hover:no-underline">
+              Перейти до неї
+            </NuxtLink>
+            або
+            <button type="button" class="font-medium text-amber-900 underline hover:no-underline" @click="onStopOtherTimer">
+              зупинити таймер
+            </button>
+          </div>
+          <template v-else-if="isRunningFor(skill.id)">
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <span class="text-2xl font-mono font-semibold tabular-nums text-indigo-600">{{ elapsedFormatted }}</span>
+              <UiButton variant="danger" @click="onStopTimer">
+                Зупинити
+              </UiButton>
+            </div>
+            <div class="mt-3">
+              <label class="block text-sm font-medium text-slate-700">Примітка (опційно)</label>
+              <UiTextarea v-model="timerNote" rows="2" class="mt-1" placeholder="Що робили?" />
+            </div>
+          </template>
+          <template v-else>
+            <UiButton class="mt-4" @click="onStartTimer">
+              <Timer :size="18" />
+              Старт таймер
+            </UiButton>
+          </template>
+        </UiCard>
+        <UiCard class="p-6">
           <h2 class="text-lg font-semibold text-slate-900">Записати прогрес</h2>
           <form class="mt-4 grid gap-4" @submit.prevent="onLog">
             <label class="grid gap-2 text-sm font-medium text-slate-700">
@@ -205,7 +239,7 @@
 
 <script setup lang="ts">
 import type { Skill, SkillLevel, SkillStatus } from '@/types/skill'
-import { ArrowLeft, Heart, Info } from 'lucide-vue-next'
+import { ArrowLeft, Heart, Info, Timer } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -214,6 +248,17 @@ const { fetchSkillById, updateSkill, deleteSkill } = useSkills()
 const { logs, fetchLogs, createLog, deleteLog, subscribeToLogs, loading, error } =
   useLogs()
 const { favorites, fetchFavorites, toggleFavorite } = useFavorites()
+const {
+  runningTask,
+  elapsedFormatted,
+  elapsedMinutes,
+  start: startTimer,
+  stop: stopTimer,
+  isRunningFor,
+  isOtherRunning
+} = useTaskTimer()
+
+const timerNote = ref('')
 
 const { pushToast } = useToasts()
 
@@ -379,6 +424,37 @@ const onToggleFavorite = async () => {
     return
   }
   await toggleFavorite(skill.value.id, id)
+}
+
+const onStartTimer = () => {
+  if (!skill.value) return
+  startTimer(skill.value.id, skill.value.title)
+}
+
+const onStopTimer = async () => {
+  const minutes = Math.max(1, elapsedMinutes.value)
+  const task = stopTimer()
+  if (!task || !skill.value || task.skillId !== skill.value.id) return
+  try {
+    await createLog({
+      skill_id: skill.value.id,
+      minutes,
+      note: timerNote.value.trim() || null
+    })
+    timerNote.value = ''
+    pushToast({ message: `Додано ${minutes} хв у прогрес`, tone: 'success' })
+  } catch (err) {
+    pushToast({
+      message: err instanceof Error ? err.message : 'Не вдалося зберегти запис',
+      tone: 'danger'
+    })
+  }
+}
+
+const onStopOtherTimer = async () => {
+  const task = stopTimer()
+  if (!task) return
+  pushToast({ message: 'Таймер зупинено', tone: 'info' })
 }
 
 let stopLogs: (() => void) | null = null

@@ -42,7 +42,35 @@
         />
       </div>
     </div>
-    <div class="mt-auto pt-3">
+    <div class="mt-auto flex flex-wrap items-center gap-2 pt-3">
+      <UiButton
+        v-if="isRunningFor(skill.id)"
+        variant="primary"
+        size="sm"
+        class="inline-flex items-center gap-1.5"
+        @click="goToTask"
+      >
+        <Timer :size="14" />
+        Трекається
+      </UiButton>
+      <UiButton
+        v-else-if="!isOtherRunning(skill.id)"
+        variant="secondary"
+        size="sm"
+        class="inline-flex items-center gap-1.5"
+        aria-label="Старт таймер"
+        @click="onStartTimer"
+      >
+        <Timer :size="14" />
+        Старт таймер
+      </UiButton>
+      <span
+        v-else
+        class="text-xs text-slate-500"
+        title="Зупиніть таймер іншої задачі в шапці"
+      >
+        Таймер зайнятий
+      </span>
       <NuxtLink
         :to="`/skills/${skill.id}`"
         class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50"
@@ -55,7 +83,7 @@
 
 <script setup lang="ts">
 import type { Skill } from '@/types/skill'
-import { Heart } from 'lucide-vue-next'
+import { Heart, Timer } from 'lucide-vue-next'
 
 const props = defineProps<{
   skill: Skill
@@ -63,6 +91,10 @@ const props = defineProps<{
   logCount: number
   totalMinutes: number
 }>()
+
+const router = useRouter()
+const { pushToast } = useToasts()
+const { start: startTimer, isRunningFor, isOtherRunning } = useTaskTimer()
 
 const progressPercent = computed(() => {
   const est = props.skill.estimate_minutes
@@ -78,4 +110,19 @@ const levelLabel = computed(() => {
   const map: Record<string, string> = { easy: 'Легко', medium: 'Середньо', hard: 'Важко' }
   return map[props.skill.level] ?? props.skill.level
 })
+
+const onStartTimer = () => {
+  if (isOtherRunning(props.skill.id)) {
+    pushToast({
+      message: 'Зупиніть таймер іншої задачі в шапці спочатку.',
+      tone: 'warning'
+    })
+    return
+  }
+  startTimer(props.skill.id, props.skill.title)
+}
+
+const goToTask = () => {
+  router.push(`/skills/${props.skill.id}`)
+}
 </script>

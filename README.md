@@ -4,7 +4,8 @@ App for creating tasks, logging progress, favorites, and weekly stats. UI is in 
 
 ## Features
 
-- **Auth** — Supabase Auth: login and sign-up modals (email or username + password), Ukrainian UI. Forgot password (email → link → set new password on `/reset-password`, then sign in). Display name at registration. Toasts by type (success / danger / info–warning with icons and borders).
+- **Auth** — Supabase Auth: login and sign-up modals (email or username + password), Ukrainian UI. Forgot password (email → link → set new password on `/reset-password`, then sign in). Display name at registration. Toasts by type (success / danger / info–warning with icons and borders); toasts styled for dark theme. Logout redirects to home.
+- **Guest landing** — unauthenticated users see a landing page (hero + CTAs); task list and app features are hidden until login/register. Auth middleware protects `/skills/new` and `/skills/[id]` and redirects guests to `/`.
 - **Tasks** — create, edit, delete with difficulty levels (Easy / Medium / Hard), statuses, and time estimate
 - **Progress logs** — log time in minutes with notes; progress bar when estimate is set (primary blue fill; dark track on task edit page)
 - **In-app timer** — start/stop tracking from the task page or from a “Старт таймер” button on each task card; one active timer at a time; when running, a bar under the header shows task name and elapsed time (aligned with main content); stop from the bar saves time to progress; state persisted in `localStorage`
@@ -123,26 +124,28 @@ App runs at [http://localhost:3000](http://localhost:3000)
 
 | Path | Description |
 |------|-------------|
-| `/` | Task list, filters, weekly stats |
+| `/` | Landing for guests (hero + login/register); task list and dashboard for logged-in users |
 | `/reset-password` | Set new password (from email link); then redirect to login |
-| `/skills/new` | Create new task |
-| `/skills/:id` | Details, edit, logs, favorites, tips |
+| `/skills/new` | Create new task (auth required; redirects to `/` if not logged in) |
+| `/skills/:id` | Details, edit, logs, favorites, tips (auth required; redirects to `/` if not logged in) |
 
 ## Project structure
 
 ```
 app/
-├── assets/          # CSS
+├── assets/          # CSS (themes, skeleton, toasts, etc.)
 ├── components/      # Vue components
 │   ├── ui/          # UI components (Button, Input, Select, Card...)
+│   ├── LandingView.vue
 │   ├── SkillCard.vue
 │   ├── FilterBar.vue
 │   ├── StatusBadge.vue
 │   ├── WeeklySummary.vue
 │   └── ...
 ├── composables/     # useAuth, useSkills, useLogs, useFavorites, useToasts, useSupabase, useTaskTimer
+├── middleware/      # auth.ts — protects /skills/new and /skills/[id]
 ├── pages/           # Pages (index, reset-password, skills/new, skills/[id])
-├── plugins/         # Fancybox etc.
+├── plugins/         # auth.client, Fancybox
 └── types/           # TypeScript types
 ```
 

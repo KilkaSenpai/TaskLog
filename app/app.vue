@@ -49,6 +49,26 @@
         </nav>
       </div>
     </header>
+    <div
+      v-if="runningTask"
+      class="timer-bar sticky top-16 z-10 border-b border-slate-200 bg-indigo-50/90 py-2 backdrop-blur"
+    >
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-6">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-sm font-medium text-indigo-900">Трекається:</span>
+          <NuxtLink
+            :to="`/skills/${runningTask.skillId}`"
+            class="font-semibold text-indigo-700 underline hover:no-underline"
+          >
+            {{ runningTask.title }}
+          </NuxtLink>
+          <span class="font-mono text-sm tabular-nums text-indigo-600">{{ timerElapsedFormatted }}</span>
+        </div>
+        <UiButton variant="secondary" size="sm" @click="onStopTimerFromHeader">
+          Зупинити таймер
+        </UiButton>
+      </div>
+    </div>
     <main class="mx-auto w-full max-w-6xl px-6 py-8">
       <NuxtPage />
     </main>
@@ -66,8 +86,30 @@ const { authUser, initAuth, openAuth, logout } = useAuth()
 const showAuthInHeader = computed(() => route.path !== '/reset-password')
 const isLoggedIn = computed(() => showAuthInHeader.value && !!authUser.value)
 const { skills, fetchSkills } = useSkills()
-const { logs, fetchLogs } = useLogs()
+const { logs, fetchLogs, createLog } = useLogs()
 const { pushToast } = useToasts()
+const {
+  runningTask,
+  elapsedFormatted: timerElapsedFormatted,
+  elapsedMinutes: timerElapsedMinutes,
+  stop: stopTimer
+} = useTaskTimer()
+
+const onStopTimerFromHeader = async () => {
+  const minutes = Math.max(1, timerElapsedMinutes.value)
+  const task = stopTimer()
+  if (!task) return
+  try {
+    await createLog({
+      skill_id: task.skillId,
+      minutes,
+      note: null
+    })
+    pushToast({ message: `Додано ${minutes} хв у прогрес`, tone: 'success' })
+  } catch {
+    pushToast({ message: 'Таймер зупинено', tone: 'info' })
+  }
+}
 
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')

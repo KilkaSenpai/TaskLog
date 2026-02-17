@@ -7,6 +7,7 @@ App for creating tasks, logging progress, favorites, and weekly stats. UI is in 
 - **Auth** — Supabase Auth: login and sign-up modals (email or username + password), Ukrainian UI. Forgot password (email → link → set new password on `/reset-password`, then sign in). Display name at registration. Toasts by type (success / danger / info–warning with icons and borders).
 - **Tasks** — create, edit, delete with difficulty levels (Easy / Medium / Hard), statuses, and time estimate
 - **Progress logs** — log time in minutes with notes; progress bar when estimate is set (primary blue fill; dark track on task edit page)
+- **In-app timer** — start/stop tracking from the task page or from a “Старт таймер” button on each task card; one active timer at a time; when running, a bar under the header shows task name and elapsed time (aligned with main content); stop from the bar saves time to progress; state persisted in `localStorage`
 - **Favorites** — add tasks to favorites (heart icon), “Favorites only” filter
 - **Weekly stats** — minutes per week, active and total task counts
 - **Realtime** — instant updates on changes (Supabase)
@@ -139,7 +140,7 @@ app/
 │   ├── StatusBadge.vue
 │   ├── WeeklySummary.vue
 │   └── ...
-├── composables/     # useAuth, useSkills, useLogs, useFavorites, useToasts, useSupabase
+├── composables/     # useAuth, useSkills, useLogs, useFavorites, useToasts, useSupabase, useTaskTimer
 ├── pages/           # Pages (index, reset-password, skills/new, skills/[id])
 ├── plugins/         # Fancybox etc.
 └── types/           # TypeScript types

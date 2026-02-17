@@ -218,3 +218,14 @@ a {
 .skill-detail-progress-fill {
   background-color: #2f3d50;
 }
+
+/* Timer bar (global) in dark theme */
+:root[data-theme='dark'] .timer-bar {
+  background-color: rgba(49, 46, 129, 0.25);
+  border-color: var(--border);
+}
+
+:root[data-theme='dark'] .timer-bar a,
+:root[data-theme='dark'] .timer-bar span {
+  color: var(--text);
+}

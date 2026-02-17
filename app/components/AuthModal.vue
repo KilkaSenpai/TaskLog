@@ -23,27 +23,27 @@
           </div>
 
           <div class="px-6 pt-4">
-            <div class="mb-4 flex rounded-full bg-slate-100 p-1 text-sm font-medium text-slate-600">
+            <div class="auth-modal-tabs mb-4 flex rounded-full bg-slate-100 p-1 text-sm font-medium text-slate-600">
               <button
                 type="button"
-                class="flex-1 rounded-full px-3 py-1.5 transition cursor-pointer"
-                :class="
+                class="auth-modal-tab flex-1 rounded-full px-3 py-1.5 transition cursor-pointer"
+                :class="[
                   authMode === 'login'
-                    ? 'bg-white text-slate-900 shadow-sm'
+                    ? 'auth-modal-tab-active bg-white text-slate-900 shadow-sm'
                     : 'text-slate-500'
-                "
+                ]"
                 @click="setMode('login')"
               >
                 Вхід
               </button>
               <button
                 type="button"
-                class="flex-1 rounded-full px-3 py-1.5 transition cursor-pointer"
-                :class="
+                class="auth-modal-tab flex-1 rounded-full px-3 py-1.5 transition cursor-pointer"
+                :class="[
                   authMode === 'register'
-                    ? 'bg-white text-slate-900 shadow-sm'
+                    ? 'auth-modal-tab-active bg-white text-slate-900 shadow-sm'
                     : 'text-slate-500'
-                "
+                ]"
                 @click="setMode('register')"
               >
                 Реєстрація
@@ -121,7 +121,7 @@
                   </button>
                   <button
                     type="button"
-                    class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+                    class="auth-modal-cancel rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-100 hover:text-slate-900"
                     @click="showForgotPassword = false"
                   >
                     Скасувати

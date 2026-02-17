@@ -6,11 +6,14 @@ App for creating tasks, logging progress, favorites, and weekly stats. UI is in 
 
 - **Auth** — Supabase Auth: login and sign-up modals (email or username + password), Ukrainian UI. Forgot password (email → link → set new password on `/reset-password`, then sign in). Display name at registration. Toasts by type (success / danger / info–warning with icons and borders).
 - **Tasks** — create, edit, delete with difficulty levels (Easy / Medium / Hard), statuses, and time estimate
-- **Progress logs** — log time in minutes with notes; progress bar when estimate is set
+- **Progress logs** — log time in minutes with notes; progress bar when estimate is set (primary blue fill; dark track on task edit page)
 - **Favorites** — add tasks to favorites (heart icon), “Favorites only” filter
 - **Weekly stats** — minutes per week, active and total task counts
 - **Realtime** — instant updates on changes (Supabase)
 - **Tips** — modal with quick tips on the edit page
+- **Theme** — light / dark mode with header toggle; preference saved in `localStorage` and optional system `prefers-color-scheme` on first visit
+- **Search** — debounced search by name/description (350 ms) so you can type full words without requests on every keystroke
+- **Skeleton loading** — softer skeleton colors; in dark mode skeletons are dimmer so they don’t overpower the UI
 
 ## Stack
 

@@ -35,7 +35,7 @@
         <span>Прогрес: {{ totalMinutes }} / {{ skill.estimate_minutes }} хв</span>
         <span>{{ progressPercent }}%</span>
       </div>
-      <div class="h-1.5 overflow-hidden rounded-full bg-slate-200">
+      <div class="h-1.5 overflow-hidden rounded-full skill-progress-track">
         <div
           class="h-full rounded-full bg-indigo-500 transition-all"
           :style="{ width: `${Math.min(progressPercent, 100)}%` }"

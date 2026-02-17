@@ -5,7 +5,7 @@
       type="search"
       placeholder="Пошук за назвою або описом"
       class="min-w-[220px] flex-1"
-      @update:model-value="emitChange"
+      @update:model-value="onSearchInput"
     />
     <UiSelect
       v-model="statusLocal"
@@ -91,10 +91,33 @@ watch(
   }
 )
 
+const SEARCH_DEBOUNCE_MS = 500
+let searchDebounceId: ReturnType<typeof setTimeout> | null = null
+
+const emitSearch = () => {
+  emit('update:search', searchLocal.value)
+}
+
+const onSearchInput = () => {
+  if (searchDebounceId) clearTimeout(searchDebounceId)
+  searchDebounceId = setTimeout(() => {
+    searchDebounceId = null
+    emitSearch()
+  }, SEARCH_DEBOUNCE_MS)
+}
+
 const emitChange = () => {
+  if (searchDebounceId) {
+    clearTimeout(searchDebounceId)
+    searchDebounceId = null
+  }
   emit('update:search', searchLocal.value)
   emit('update:status', statusLocal.value)
   emit('update:level', levelLocal.value)
   emit('update:favoritesOnly', favoritesOnlyLocal.value)
 }
+
+onBeforeUnmount(() => {
+  if (searchDebounceId) clearTimeout(searchDebounceId)
+})
 </script>

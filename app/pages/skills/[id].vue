@@ -90,6 +90,17 @@
               </UiSelect>
             </label>
           </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <UiButton
+              type="button"
+              variant="secondary"
+              :disabled="improveLoading"
+              @click="onImproveWithAi"
+            >
+              {{ improveLoading ? 'Обробка...' : 'Покращити опис за допомогою AI' }}
+            </UiButton>
+          </div>
+          <p v-if="improveError" class="text-sm text-rose-600">{{ improveError }}</p>
           <div class="flex flex-wrap gap-3">
             <UiButton type="submit" :disabled="saving">
               {{ saving ? 'Збереження...' : 'Зберегти зміни' }}
@@ -247,6 +258,7 @@ const route = useRoute()
 const router = useRouter()
 const { authUser, openAuth } = useAuth()
 const { fetchSkillById, updateSkill, deleteSkill } = useSkills()
+const { improveTask, improveLoading, improveError } = useAiAssistant()
 const { logs, fetchLogs, createLog, deleteLog, subscribeToLogs, loading, error } =
   useLogs()
 const { favorites, fetchFavorites, toggleFavorite } = useFavorites()
@@ -318,6 +330,14 @@ const resetForm = () => {
   form.description = skill.value.description || ''
   form.level = skill.value.level
   form.status = skill.value.status
+}
+
+const onImproveWithAi = async () => {
+  const result = await improveTask(form.title, form.description)
+  if (result) {
+    form.title = result.title
+    form.description = result.description
+  }
 }
 
 const loadSkill = async () => {

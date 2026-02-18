@@ -12,6 +12,7 @@
   "dependencies": {
     "@fancyapps/ui": "^6.1.10",
     "@supabase/supabase-js": "^2.93.3",
+    "groq-sdk": "^0.37.0",
     "lucide-vue-next": "^0.563.0",
     "nuxt": "^4.3.0",
     "vue": "^3.5.27",

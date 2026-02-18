@@ -10,6 +10,7 @@ export type Skill = {
   created_at: string
   user_id: string | null
   estimate_minutes?: number | null
+  parent_id?: string | null
 }
 
 export type SkillLog = {

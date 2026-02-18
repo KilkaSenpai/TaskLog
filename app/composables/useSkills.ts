@@ -69,6 +69,26 @@ export const useSkills = () => {
     return data as Skill
   }
 
+  const fetchSkillsByParentId = async (
+    parentId: string,
+    userId?: string
+  ): Promise<Skill[]> => {
+    if (!userId || userId === 'anon') {
+      return []
+    }
+    const { data, error: fetchError } = await supabase
+      .from('skills')
+      .select('*')
+      .eq('parent_id', parentId)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true })
+
+    if (fetchError) {
+      return []
+    }
+    return (data ?? []) as Skill[]
+  }
+
   const createSkill = async (payload: {
     title: string
     description: string | null
@@ -76,6 +96,7 @@ export const useSkills = () => {
     status: SkillStatus
     user_id: string
     estimate_minutes?: number | null
+    parent_id?: string | null
   }) => {
     const { data, error: insertError } = await supabase
       .from('skills')
@@ -155,6 +176,7 @@ export const useSkills = () => {
     error,
     fetchSkills,
     fetchSkillById,
+    fetchSkillsByParentId,
     createSkill,
     updateSkill,
     deleteSkill,

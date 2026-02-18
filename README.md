@@ -16,6 +16,7 @@ App for creating tasks, logging progress, favorites, and weekly stats. UI is in 
 - **Theme** — light / dark mode with header toggle; preference saved in `localStorage` and optional system `prefers-color-scheme` on first visit
 - **Search** — debounced search by name/description (350 ms) so you can type full words without requests on every keystroke
 - **Skeleton loading** — softer skeleton colors; in dark mode skeletons are dimmer so they don’t overpower the UI
+- **AI assistant (Groq)** — сформулювати назву та опис задачі з твоїх вводних (optional `GROQ_API_KEY`)
 
 ## Stack
 
@@ -25,6 +26,7 @@ App for creating tasks, logging progress, favorites, and weekly stats. UI is in 
 - [Tailwind CSS 4](https://tailwindcss.com/)
 - [Lucide Icons](https://lucide.dev/)
 - [Fancybox](https://fancyapps.com/) — modals
+- [Groq](https://groq.com/) — LLM для формулювання задачі з вводів користувача (безкоштовний tier)
 
 ## Getting started
 
@@ -101,6 +103,8 @@ Create `.env` or `.env.local`:
 ```env
 NUXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NUXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+# Optional: for AI “improve description” and “suggest subtasks” (get key at https://console.groq.com)
+GROQ_API_KEY=your_groq_api_key
 ```
 
 ### 4. Run
@@ -142,7 +146,7 @@ app/
 │   ├── StatusBadge.vue
 │   ├── WeeklySummary.vue
 │   └── ...
-├── composables/     # useAuth, useSkills, useLogs, useFavorites, useToasts, useSupabase, useTaskTimer
+├── composables/     # useAuth, useSkills, useLogs, useFavorites, useToasts, useSupabase, useTaskTimer, useAiAssistant
 ├── middleware/      # auth.ts — protects /skills/new and /skills/[id]
 ├── pages/           # Pages (index, reset-password, skills/new, skills/[id])
 ├── plugins/         # auth.client, Fancybox

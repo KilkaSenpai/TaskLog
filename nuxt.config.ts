@@ -18,6 +18,7 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    groqApiKey: process.env.GROQ_API_KEY || process.env.NUXT_GROQ_API_KEY || '',
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || ''

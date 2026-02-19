@@ -64,7 +64,7 @@
           </NuxtLink>
           <span class="font-mono text-sm tabular-nums text-indigo-600">{{ timerElapsedFormatted }}</span>
         </div>
-        <UiButton variant="secondary" size="sm" @click="onStopTimerFromHeader">
+        <UiButton variant="secondary" size="sm" @click="requestStopTimer">
           Зупинити таймер
         </UiButton>
       </div>
@@ -77,6 +77,48 @@
     </main>
     <ToastHost />
     <AuthModal />
+
+    <!-- Stop-timer modal: close only via buttons, no click-outside -->
+    <Teleport to="body">
+      <div
+        v-if="stopTimerModalOpen && capturedStopTask"
+        class="stop-timer-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-6"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="stop-timer-modal-title"
+      >
+        <div class="absolute inset-0 bg-slate-900/50" />
+        <div class="stop-timer-modal-content relative w-full max-w-md rounded-2xl border border-slate-200 bg-white px-8 py-8 shadow-lg shadow-slate-200/50">
+          <h2 id="stop-timer-modal-title" class="text-lg font-semibold text-slate-900">
+            Зупинити таймер
+          </h2>
+          <p class="mt-3 text-sm text-slate-500">
+            Опишіть, що робили — запис збережеться в прогрес із часом.
+          </p>
+          <p class="mt-3 text-sm font-medium text-indigo-600">
+            Час: {{ capturedStopTask.minutes }} хв
+          </p>
+          <div class="mt-6">
+            <label for="stop-timer-note" class="block text-sm font-medium text-slate-700">Що робили? *</label>
+            <UiTextarea
+              id="stop-timer-note"
+              v-model="stopTimerNote"
+              rows="3"
+              class="mt-2"
+              maxlength="2000"
+            />
+          </div>
+          <div class="mt-8 flex flex-wrap gap-4">
+            <UiButton variant="secondary" class="h-11 min-w-[7rem]" @click="onCancelStopTimer">
+              Скасувати
+            </UiButton>
+            <UiButton variant="primary" class="h-11 min-w-[7rem]" :disabled="stopTimerSaving" @click="onStopTimerSubmit">
+              {{ stopTimerSaving ? 'Збереження...' : 'Зберегти запис' }}
+            </UiButton>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -95,9 +137,14 @@ const { pushToast } = useToasts()
 const {
   runningTask,
   elapsedFormatted: timerElapsedFormatted,
-  elapsedMinutes: timerElapsedMinutes,
+  start: startTimer,
+  resume: resumeTimer,
   stop: stopTimer
 } = useTaskTimer()
+const { isOpen: stopTimerModalOpen, capturedTask: capturedStopTask, requestStop: requestStopTimer, close: closeStopModal } = useStopTimerModal()
+
+const stopTimerNote = ref('')
+const stopTimerSaving = ref(false)
 
 const onLogout = async () => {
   stopTimer()
@@ -105,20 +152,52 @@ const onLogout = async () => {
   await navigateTo('/')
 }
 
-const onStopTimerFromHeader = async () => {
-  const minutes = Math.max(1, timerElapsedMinutes.value)
-  const task = stopTimer()
+function closeStopTimerModal() {
+  stopTimerNote.value = ''
+  closeStopModal()
+}
+
+function onCancelStopTimer() {
+  const task = capturedStopTask.value
+  if (task) {
+    const startedAt = task.startedAt
+    if (typeof startedAt === 'number' && Number.isFinite(startedAt)) {
+      resumeTimer(task.skillId, task.title, startedAt)
+    } else {
+      startTimer(task.skillId, task.title)
+    }
+  }
+  closeStopTimerModal()
+}
+
+async function onStopTimerSubmit() {
+  const note = stopTimerNote.value.trim()
+  if (note.length < 4) {
+    pushToast({ message: 'Введіть опис (мін. 4 символи)', tone: 'danger' })
+    return
+  }
+  const task = capturedStopTask.value
   if (!task) return
+  const { skillId, minutes } = task
+  stopTimerSaving.value = true
   try {
     await createLog({
-      skill_id: task.skillId,
+      skill_id: skillId,
       minutes,
-      note: null
+      note
     })
+    closeStopTimerModal()
     pushToast({ message: `Додано ${minutes} хв у прогрес`, tone: 'success' })
   } catch {
-    pushToast({ message: 'Таймер зупинено', tone: 'info' })
+    pushToast({ message: 'Не вдалося зберегти запис', tone: 'danger' })
+    startTimerAgain(task)
+  } finally {
+    stopTimerSaving.value = false
   }
+}
+
+function startTimerAgain(task: { skillId: string; title: string; startedAt: number }) {
+  resumeTimer(task.skillId, task.title, task.startedAt)
 }
 
 type ThemeMode = 'light' | 'dark'

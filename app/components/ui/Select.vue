@@ -25,7 +25,7 @@ const sizeClasses = {
 }
 
 const base =
-  'w-full rounded-xl border border-slate-200 bg-white text-slate-900 shadow-sm transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 focus:outline-none'
+  'w-full rounded-xl border border-slate-200 bg-white text-slate-900 shadow-sm transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20'
 
 const updateValue = (event: Event) => {
   const target = event.target as HTMLSelectElement

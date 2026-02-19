@@ -26,3 +26,14 @@ export type Favorite = {
   skill_id: string
   user_id: string
 }
+
+/** Direction from from_skill_id to to_skill_id (inverse label when viewing the other skill) */
+export type SkillLinkType = 'blocks' | 'relates_to' | 'duplicates'
+
+export type SkillLink = {
+  id: string
+  from_skill_id: string
+  to_skill_id: string
+  link_type: SkillLinkType
+  created_at: string
+}

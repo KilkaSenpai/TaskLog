@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Bind dark: variant to app theme (data-theme), not system preference */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   color-scheme: light;
   --bg: #f4f7ff;
@@ -18,12 +21,12 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #020617;
-  --surface: #020617;
-  --surface-elev: #020617;
+  --bg: #030712;
+  --surface: #030712;
+  --surface-elev: #0f172a;
   --text: #e5e7eb;
   --muted: #9ca3af;
-  --border: #1f2937;
+  --border: #1e293b;
   --primary: #6366f1;
   --primary-strong: #4f46e5;
   --success: #22c55e;
@@ -45,7 +48,7 @@ body {
 }
 
 :root[data-theme='dark'] body {
-  background: radial-gradient(circle at top, #020617 0%, var(--bg) 55%);
+  background: radial-gradient(circle at top, #030712 0%, var(--bg) 55%);
 }
 
 a {
@@ -170,7 +173,7 @@ a {
   100% { transform: translateX(220%); }
 }
 
-/* Fancybox (Tips modal) — стиль под приложение */
+/* Fancybox (Tips modal) — styles to match app theme */
 .fancybox-skill-theme.fancybox__container {
   --fancybox-backdrop-bg: rgba(15, 23, 42, 0.4);
   --f-html-color: var(--text);
@@ -195,6 +198,37 @@ a {
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
   overflow: hidden;
   font-family: inherit;
+}
+
+:root[data-theme='dark'] .fancybox-skill-theme.fancybox__container {
+  --fancybox-backdrop-bg: rgba(0, 0, 0, 0.75);
+}
+
+:root[data-theme='dark'] .fancybox-skill-theme .f-html {
+  background-color: var(--surface) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme='dark'] .skill-tips-inner {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* Stop-timer modal — dark theme support, same as tips modal */
+.stop-timer-modal-content {
+  background-color: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+:root[data-theme='dark'] .stop-timer-modal-backdrop .stop-timer-modal-content {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme='dark'] .stop-timer-modal-backdrop > div:first-child {
+  background-color: rgba(0, 0, 0, 0.75) !important;
 }
 
 /* Skill progress bar (cards on list) */
@@ -230,7 +264,7 @@ a {
   color: var(--text);
 }
 
-/* Кнопка «Скасувати» у модалці відновлення пароля — у темній темі білий текст на темному фоні */
+/* Cancel button in reset-password modal — white text on dark in dark theme */
 :root[data-theme='dark'] .auth-modal-cancel,
 :root[data-theme='dark'] .auth-modal-cancel:hover {
   color: #ffffff !important;
@@ -240,7 +274,7 @@ a {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Активний таб у модалці авторизації — у темній темі як кнопка скидання (білий текст, світлий контур) */
+/* Active tab in auth modal — dark theme: white text, light outline */
 :root[data-theme='dark'] .auth-modal-tab-active {
   color: #ffffff !important;
   background-color: rgba(255, 255, 255, 0.15) !important;
@@ -253,7 +287,7 @@ a {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Тости в темній темі */
+/* Toasts in dark theme */
 :root[data-theme='dark'] .toast-item {
   background-color: #1e1b4b !important;
   border-color: var(--border);
@@ -274,4 +308,14 @@ a {
 }
 :root[data-theme='dark'] .toast-message {
   color: var(--muted) !important;
+}
+
+/* "Currently tracking task" block — dark theme variant */
+:root[data-theme='dark'] .other-timer-notice {
+  background-color: rgba(120, 53, 15, 0.35) !important;
+  border-color: rgba(180, 83, 9, 0.5) !important;
+  color: #fcd34d !important;
+}
+:root[data-theme='dark'] .other-timer-notice a {
+  color: #fde047 !important;
 }

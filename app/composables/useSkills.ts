@@ -12,7 +12,11 @@ export const useSkills = () => {
   const loading = useState<boolean>('skills-loading', () => false)
   const error = useState<string | null>('skills-error', () => null)
 
-  const fetchSkills = async (filters: SkillFilters = {}, userId?: string) => {
+  const fetchSkills = async (
+    filters: SkillFilters = {},
+    userId?: string,
+    options?: { rootsOnly?: boolean }
+  ) => {
     loading.value = true
     error.value = null
 
@@ -28,6 +32,10 @@ export const useSkills = () => {
       .select('*')
       .order('created_at', { ascending: false })
       .eq('user_id', effectiveUserId)
+
+    if (options?.rootsOnly) {
+      query = query.is('parent_id', null)
+    }
 
     if (filters.status && filters.status !== 'all') {
       query = query.eq('status', filters.status)

@@ -12,12 +12,14 @@ export const useTaskTimer = () => {
 
   const elapsedSeconds = computed(() => {
     const task = runningTask.value
-    if (!task) return 0
-    return Math.floor((now.value - task.startedAt) / 1000)
+    if (!task || typeof task.startedAt !== 'number' || !Number.isFinite(now.value)) return 0
+    const sec = Math.floor((now.value - task.startedAt) / 1000)
+    return Number.isFinite(sec) && sec >= 0 ? sec : 0
   })
 
   const elapsedFormatted = computed(() => {
     const s = elapsedSeconds.value
+    if (!Number.isFinite(s) || s < 0) return '0:00'
     const m = Math.floor(s / 60)
     const sec = s % 60
     return `${m}:${sec.toString().padStart(2, '0')}`
@@ -48,11 +50,17 @@ export const useTaskTimer = () => {
   }
 
   function start(skillId: string, title: string) {
-    runningTask.value = {
-      skillId,
-      startedAt: Date.now(),
-      title
-    }
+    const startedAt = Date.now()
+    runningTask.value = { skillId, startedAt, title }
+    now.value = startedAt
+    persist()
+  }
+
+  /** Відновити таймер з того ж моменту (після скасування в модалці) */
+  function resume(skillId: string, title: string, startedAt: number) {
+    const validStartedAt = typeof startedAt === 'number' && Number.isFinite(startedAt) ? startedAt : Date.now()
+    runningTask.value = { skillId, startedAt: validStartedAt, title }
+    now.value = Date.now()
     persist()
   }
 
@@ -93,6 +101,7 @@ export const useTaskTimer = () => {
     elapsedFormatted,
     elapsedMinutes,
     start,
+    resume,
     stop,
     isRunningFor,
     isOtherRunning,

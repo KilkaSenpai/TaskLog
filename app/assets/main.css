@@ -18,12 +18,12 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #020617;
-  --surface: #020617;
-  --surface-elev: #020617;
+  --bg: #030712;
+  --surface: #030712;
+  --surface-elev: #0f172a;
   --text: #e5e7eb;
   --muted: #9ca3af;
-  --border: #1f2937;
+  --border: #1e293b;
   --primary: #6366f1;
   --primary-strong: #4f46e5;
   --success: #22c55e;
@@ -45,7 +45,7 @@ body {
 }
 
 :root[data-theme='dark'] body {
-  background: radial-gradient(circle at top, #020617 0%, var(--bg) 55%);
+  background: radial-gradient(circle at top, #030712 0%, var(--bg) 55%);
 }
 
 a {
@@ -197,6 +197,37 @@ a {
   font-family: inherit;
 }
 
+:root[data-theme='dark'] .fancybox-skill-theme.fancybox__container {
+  --fancybox-backdrop-bg: rgba(0, 0, 0, 0.75);
+}
+
+:root[data-theme='dark'] .fancybox-skill-theme .f-html {
+  background-color: var(--surface) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme='dark'] .skill-tips-inner {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* Модалка зупинки таймера — як підказки, підтримка темної теми */
+.stop-timer-modal-content {
+  background-color: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+:root[data-theme='dark'] .stop-timer-modal-backdrop .stop-timer-modal-content {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme='dark'] .stop-timer-modal-backdrop > div:first-child {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
 /* Skill progress bar (cards on list) */
 .skill-progress-track {
   background-color: #e5e7eb;
@@ -274,4 +305,14 @@ a {
 }
 :root[data-theme='dark'] .toast-message {
   color: var(--muted) !important;
+}
+
+/* Блок «Зараз трекається задача» — темний варіант */
+:root[data-theme='dark'] .other-timer-notice {
+  background-color: rgba(120, 53, 15, 0.35) !important;
+  border-color: rgba(180, 83, 9, 0.5) !important;
+  color: #fcd34d !important;
+}
+:root[data-theme='dark'] .other-timer-notice a {
+  color: #fde047 !important;
 }

@@ -122,7 +122,7 @@
           <p class="mt-1 text-sm text-slate-500">
             Запустіть таймер і зупиніть — час автоматично додасться в прогрес.
           </p>
-          <div v-if="isOtherRunning(skill.id)" class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div v-if="isOtherRunning(skill.id)" class="other-timer-notice mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             Зараз трекається задача «{{ runningTask?.title }}».
             <NuxtLink :to="`/skills/${runningTask?.skillId}`" class="font-medium text-amber-900 underline hover:no-underline">
               Перейти до неї
@@ -135,14 +135,13 @@
           <template v-else-if="isRunningFor(skill.id)">
             <div class="mt-4 flex flex-wrap items-center gap-3">
               <span class="text-2xl font-mono font-semibold tabular-nums text-indigo-600">{{ elapsedFormatted }}</span>
-              <UiButton variant="danger" @click="onStopTimer">
+              <UiButton variant="danger" @click="requestStopTimer">
                 Зупинити
               </UiButton>
             </div>
-            <div class="mt-3">
-              <label class="block text-sm font-medium text-slate-700">Примітка (опційно)</label>
-              <UiTextarea v-model="timerNote" rows="2" class="mt-1" placeholder="Що робили?" />
-            </div>
+            <p class="mt-2 text-sm text-slate-500">
+              Натисніть «Зупинити» — зʼявиться вікно, де потрібно описати, що робили (мін. 4 символи).
+            </p>
           </template>
           <template v-else>
             <UiButton class="mt-4" @click="onStartTimer">
@@ -215,7 +214,7 @@
     </div>
 
     <div id="skill-tips" style="display: none">
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50">
+      <div class="skill-tips-inner rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50">
         <h3 class="text-lg font-semibold text-slate-900">Швидкі підказки</h3>
         <div class="mt-4 grid gap-3 text-sm text-slate-600">
           <p class="flex items-start gap-2">
@@ -260,8 +259,7 @@ const {
   isRunningFor,
   isOtherRunning
 } = useTaskTimer()
-
-const timerNote = ref('')
+const { requestStop: requestStopTimer } = useStopTimerModal()
 
 const { pushToast } = useToasts()
 
@@ -443,26 +441,6 @@ const onToggleFavorite = async () => {
 const onStartTimer = () => {
   if (!skill.value) return
   startTimer(skill.value.id, skill.value.title)
-}
-
-const onStopTimer = async () => {
-  const minutes = Math.max(1, elapsedMinutes.value)
-  const task = stopTimer()
-  if (!task || !skill.value || task.skillId !== skill.value.id) return
-  try {
-    await createLog({
-      skill_id: skill.value.id,
-      minutes,
-      note: timerNote.value.trim() || null
-    })
-    timerNote.value = ''
-    pushToast({ message: `Додано ${minutes} хв у прогрес`, tone: 'success' })
-  } catch (err) {
-    pushToast({
-      message: err instanceof Error ? err.message : 'Не вдалося зберегти запис',
-      tone: 'danger'
-    })
-  }
 }
 
 const onStopOtherTimer = async () => {

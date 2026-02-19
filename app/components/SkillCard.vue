@@ -1,9 +1,24 @@
 <template>
   <article
     class="flex min-h-full flex-col rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+    :class="{ 'border-l-4 border-l-indigo-300': isSubtask }"
   >
     <div class="flex items-center justify-between gap-3">
-      <StatusBadge :status="skill.status" />
+      <div class="flex flex-wrap items-center gap-2">
+        <StatusBadge :status="skill.status" />
+        <span
+          v-if="isSubtask"
+          class="inline-flex items-center rounded-full bg-slate-200/80 px-2.5 py-0.5 text-xs text-slate-600"
+        >
+          Підзадача
+        </span>
+        <span
+          v-if="subtaskCount != null && subtaskCount > 0"
+          class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700"
+        >
+          {{ subtaskCount }} {{ subtaskCount === 1 ? 'підзадача' : 'підзадачі' }}
+        </span>
+      </div>
       <UiButton
         variant="secondary"
         size="icon"
@@ -86,12 +101,17 @@ import type { Skill } from '@/types/skill'
 import { formatEstimateMinutes } from '@/composables/useFormatEstimate'
 import { Heart, Timer } from 'lucide-vue-next'
 
-const props = defineProps<{
-  skill: Skill
-  isFavorite: boolean
-  logCount: number
-  totalMinutes: number
-}>()
+const props = withDefaults(
+  defineProps<{
+    skill: Skill
+    isFavorite: boolean
+    logCount: number
+    totalMinutes: number
+    isSubtask?: boolean
+    subtaskCount?: number
+  }>(),
+  { isSubtask: false, subtaskCount: undefined }
+)
 
 const router = useRouter()
 const { pushToast } = useToasts()

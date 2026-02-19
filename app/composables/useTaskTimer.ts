@@ -56,7 +56,7 @@ export const useTaskTimer = () => {
     persist()
   }
 
-  /** Відновити таймер з того ж моменту (після скасування в модалці) */
+  /** Resume timer from the same moment (after cancel in modal) */
   function resume(skillId: string, title: string, startedAt: number) {
     const validStartedAt = typeof startedAt === 'number' && Number.isFinite(startedAt) ? startedAt : Date.now()
     runningTask.value = { skillId, startedAt: validStartedAt, title }

@@ -78,7 +78,7 @@
     <ToastHost />
     <AuthModal />
 
-    <!-- Модалка зупинки таймера: закриття тільки кнопками, без кліку по області -->
+    <!-- Stop-timer modal: close only via buttons, no click-outside -->
     <Teleport to="body">
       <div
         v-if="stopTimerModalOpen && capturedStopTask"

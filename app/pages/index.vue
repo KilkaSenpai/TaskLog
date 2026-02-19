@@ -218,7 +218,7 @@ watch(
   }
 )
 
-// Після оновлення сторінки authUser може зʼявитися пізніше — тоді робимо повне оновлення
+// After page load authUser may appear later — then run full refresh
 watch(
   () => authUser.value?.id,
   async (id) => {

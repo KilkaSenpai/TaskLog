@@ -11,7 +11,7 @@ export const useStopTimerModal = () => {
 
   const { runningTask, elapsedMinutes, stop: stopTimer } = useTaskTimer()
 
-  /** Зупиняє таймер, зберігає задачу + хвилини, відкриває модалку */
+  /** Stops timer, captures task + minutes, opens modal */
   const requestStop = () => {
     if (!runningTask.value) return
     const minutes = Math.max(1, elapsedMinutes.value)

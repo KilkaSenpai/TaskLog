@@ -68,27 +68,15 @@
             <UiTextarea v-model="form.description" rows="4" />
           </label>
           <p v-if="skill.estimate_minutes" class="text-sm text-slate-600">
-            Оцінка часу: <strong>{{ skill.estimate_minutes }} хв</strong>
+            Оцінка часу: <strong>{{ formatEstimateMinutes(skill.estimate_minutes) }}</strong>
           </p>
           <div class="grid gap-4 md:grid-cols-2">
-            <label class="grid gap-2 text-sm font-medium text-slate-700">
-              Рівень складності
-              <UiSelect v-model="form.level">
-                <option value="easy">Легко</option>
-                <option value="medium">Середньо</option>
-                <option value="hard">Важко</option>
-              </UiSelect>
-            </label>
-            <label class="grid gap-2 text-sm font-medium text-slate-700">
-              Статус
-              <UiSelect v-model="form.status">
-                <option value="planned" disabled>Заплановано (за замовчуванням)</option>
-                <option value="active">Активна</option>
-                <option value="paused">Призупинено</option>
-                <option value="done">Виконано</option>
-                <option value="archived">Архів</option>
-              </UiSelect>
-            </label>
+            <p class="text-sm font-medium text-slate-700">
+              Рівень складності: <span class="font-normal text-slate-600">{{ levelLabel }}</span>
+            </p>
+            <p class="text-sm font-medium text-slate-700 md:text-right">
+              Статус: <span class="font-normal text-slate-600">{{ statusLabel }}</span>
+            </p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <UiButton
@@ -118,7 +106,7 @@
           <h2 class="text-lg font-semibold text-slate-900">Прогрес</h2>
           <div class="mt-3">
             <div class="mb-1 flex justify-between text-sm text-slate-600">
-              <span>{{ totalMinutes }} / {{ skill.estimate_minutes }} хв</span>
+              <span>{{ formatEstimateMinutes(totalMinutes) }} / {{ formatEstimateMinutes(skill.estimate_minutes) }}</span>
               <span>{{ progressPercent }}%</span>
             </div>
             <div class="h-2 overflow-hidden rounded-full skill-detail-progress-track">
@@ -185,7 +173,7 @@
           <div class="flex items-center justify-between gap-3">
             <h2 class="text-lg font-semibold text-slate-900">Історія прогресу</h2>
             <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600">
-              {{ skill.estimate_minutes ? `${totalMinutes} / ${skill.estimate_minutes} хв` : `Всього хвилин: ${totalMinutes}` }}
+              {{ skill.estimate_minutes ? `${formatEstimateMinutes(totalMinutes)} / ${formatEstimateMinutes(skill.estimate_minutes)}` : `Всього: ${formatEstimateMinutes(totalMinutes)}` }}
             </span>
           </div>
           <div
@@ -249,7 +237,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Skill, SkillLevel, SkillStatus } from '@/types/skill'
+import type { Skill } from '@/types/skill'
+import { formatEstimateMinutes } from '@/composables/useFormatEstimate'
 import { ArrowLeft, Heart, Info, Timer } from 'lucide-vue-next'
 
 definePageMeta({ middleware: ['auth'] })
@@ -287,13 +276,9 @@ const logError = ref<string | null>(null)
 const form = reactive<{
   title: string
   description: string
-  level: SkillLevel
-  status: SkillStatus
 }>({
   title: '',
-  description: '',
-  level: 'easy',
-  status: 'planned'
+  description: ''
 })
 
 const logForm = reactive({
@@ -324,12 +309,26 @@ const formatDate = (iso: string) => {
   return new Date(iso).toLocaleString()
 }
 
+const levelLabel = computed(() => {
+  const map: Record<string, string> = { easy: 'Легко', medium: 'Середньо', hard: 'Важко' }
+  return skill.value ? (map[skill.value.level] ?? skill.value.level) : ''
+})
+
+const statusLabel = computed(() => {
+  const map: Record<string, string> = {
+    planned: 'Заплановано',
+    active: 'Активна',
+    paused: 'Призупинено',
+    done: 'Виконано',
+    archived: 'Архів'
+  }
+  return skill.value ? (map[skill.value.status] ?? skill.value.status) : ''
+})
+
 const resetForm = () => {
   if (!skill.value) return
   form.title = skill.value.title
   form.description = skill.value.description || ''
-  form.level = skill.value.level
-  form.status = skill.value.status
 }
 
 const onImproveWithAi = async () => {
@@ -367,13 +366,6 @@ const onSave = async () => {
     openAuth('login')
     return
   }
-  if (form.status === 'done' && logs.value.length === 0) {
-    pushToast({
-      message: 'Додайте хоча б один запис перед позначенням як виконано.',
-      tone: 'danger'
-    })
-    return
-  }
   saving.value = true
   saveError.value = null
   try {
@@ -382,8 +374,8 @@ const onSave = async () => {
       {
         title: form.title.trim(),
         description: form.description.trim() || null,
-        level: form.level,
-        status: form.status
+        level: skill.value.level,
+        status: skill.value.status
       },
       id
     )

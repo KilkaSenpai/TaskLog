@@ -58,8 +58,21 @@
           Додайте ключ у файл <code class="rounded bg-slate-200 px-1 dark:bg-slate-700">.env</code> у корені проєкту: <code class="rounded bg-slate-200 px-1 dark:bg-slate-700">GROQ_API_KEY=ваш_ключ</code>, потім перезапустіть сервер (<code class="rounded bg-slate-200 px-1 dark:bg-slate-700">npm run dev</code>).
         </p>
         <label class="grid gap-2 text-sm font-medium text-slate-700">
-          Оцінка часу (хв)
-          <UiInput v-model.number="form.estimateMinutes" type="number" min="0" placeholder="Наприклад 120" />
+          Оцінка часу
+          <div class="flex items-center gap-2">
+            <UiInput
+              v-model.number="form.estimateValue"
+              type="number"
+              min="0"
+              step="1"
+              :placeholder="form.estimateUnit === 'hours' ? 'Наприклад 2' : 'Наприклад 120'"
+              class="min-w-0 flex-1"
+            />
+            <UiSelect v-model="form.estimateUnit" class="!w-[150px] shrink-0">
+              <option value="minutes">хв</option>
+              <option value="hours">год</option>
+            </UiSelect>
+          </div>
         </label>
         <div class="grid gap-4 md:grid-cols-2">
           <label class="grid gap-2 text-sm font-medium text-slate-700">
@@ -111,18 +124,22 @@ const onImproveWithAi = async () => {
   }
 }
 
+type EstimateUnit = 'minutes' | 'hours'
+
 const form = reactive<{
   title: string
   description: string
   level: SkillLevel
   status: SkillStatus
-  estimateMinutes: number | null
+  estimateValue: number | null
+  estimateUnit: EstimateUnit
 }>({
   title: '',
   description: '',
   level: 'easy',
   status: 'planned',
-  estimateMinutes: null
+  estimateValue: null,
+  estimateUnit: 'minutes'
 })
 
 const saving = ref(false)
@@ -144,7 +161,11 @@ const onSubmit = async () => {
       level: form.level,
       status: form.status,
       user_id: id,
-      estimate_minutes: form.estimateMinutes && form.estimateMinutes > 0 ? form.estimateMinutes : null
+      estimate_minutes: (() => {
+        const v = form.estimateValue
+        if (v == null || v <= 0) return null
+        return form.estimateUnit === 'hours' ? Math.round(v * 60) : Math.round(v)
+      })()
     })
     await router.push(`/skills/${created.id}`)
   } catch (err) {

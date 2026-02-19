@@ -131,6 +131,7 @@ const filters = reactive<{
 
 const skillsReady = ref(false)
 const logsReady = ref(false)
+const favoritesReady = ref(false)
 const hydrated = ref(false)
 
 const skillsList = computed(() => {
@@ -179,6 +180,7 @@ const isInitialLoading = computed(() => {
     !hydrated.value ||
     !skillsReady.value ||
     !logsReady.value ||
+    !favoritesReady.value ||
     loading.value ||
     logsLoading.value
   )
@@ -193,6 +195,9 @@ const refreshAll = async () => {
   logsReady.value = true
   if (process.client && id) {
     await fetchFavorites(id)
+    favoritesReady.value = true
+  } else {
+    favoritesReady.value = false
   }
 }
 
@@ -213,12 +218,22 @@ watch(
   }
 )
 
+// Після оновлення сторінки authUser може зʼявитися пізніше — тоді робимо повне оновлення
+watch(
+  () => authUser.value?.id,
+  async (id) => {
+    if (process.client && id && !favoritesReady.value) {
+      await refreshAll()
+    }
+  },
+  { immediate: true }
+)
+
 let stopSkills: (() => void) | null = null
 let stopLogs: (() => void) | null = null
 
-onMounted(async () => {
+onMounted(() => {
   hydrated.value = true
-  await refreshAll()
   stopSkills = subscribeToSkills(() => fetchSkills(filters, authUser.value?.id))
   stopLogs = subscribeToLogs(async () => {
     await fetchLogs(undefined, skills.value.map((s) => s.id))

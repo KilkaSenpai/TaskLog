@@ -32,7 +32,7 @@
     </div>
     <div v-if="skill.estimate_minutes && skill.estimate_minutes > 0" class="mt-3">
       <div class="mb-1 flex justify-between text-xs text-slate-500">
-        <span>Прогрес: {{ totalMinutes }} / {{ skill.estimate_minutes }} хв</span>
+        <span>Прогрес: {{ formatEstimateMinutes(totalMinutes) }} / {{ formatEstimateMinutes(skill.estimate_minutes) }}</span>
         <span>{{ progressPercent }}%</span>
       </div>
       <div class="h-1.5 overflow-hidden rounded-full skill-progress-track">
@@ -83,6 +83,7 @@
 
 <script setup lang="ts">
 import type { Skill } from '@/types/skill'
+import { formatEstimateMinutes } from '@/composables/useFormatEstimate'
 import { Heart, Timer } from 'lucide-vue-next'
 
 const props = defineProps<{

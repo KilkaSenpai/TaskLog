@@ -113,13 +113,20 @@
           <p v-if="skill.estimate_minutes" class="text-sm text-slate-600 dark:text-slate-400">
             Оцінка часу: <strong>{{ formatEstimateMinutes(skill.estimate_minutes) }}</strong>
           </p>
-          <div class="grid gap-4 md:grid-cols-2">
+          <div class="grid items-center gap-4 md:grid-cols-2">
             <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
               Рівень складності: <span class="font-normal text-slate-600 dark:text-slate-400">{{ levelLabel }}</span>
             </p>
-            <p class="text-sm font-medium text-slate-700 dark:text-slate-300 md:text-right">
-              Статус: <span class="font-normal text-slate-600 dark:text-slate-400">{{ statusLabel }}</span>
-            </p>
+            <label class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 md:text-right md:justify-end">
+              <span>Статус</span>
+              <UiSelect v-model="form.status" class="w-full min-w-[160px] md:w-[180px]">
+                <option value="planned">Заплановано</option>
+                <option value="active">Активна (в роботі)</option>
+                <option value="paused">Призупинено</option>
+                <option value="done">Виконано</option>
+                <option value="archived">Архів</option>
+              </UiSelect>
+            </label>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <UiButton
@@ -347,7 +354,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Skill, SkillLink, SkillLinkType } from '@/types/skill'
+import type { Skill, SkillLink, SkillLinkType, SkillStatus } from '@/types/skill'
 import { formatEstimateMinutes } from '@/composables/useFormatEstimate'
 import { ArrowLeft, Heart, Info, Timer } from 'lucide-vue-next'
 
@@ -422,9 +429,11 @@ function skillTitleById(id: string): string {
 const form = reactive<{
   title: string
   description: string
+  status: SkillStatus
 }>({
   title: '',
-  description: ''
+  description: '',
+  status: 'planned'
 })
 
 const logForm = reactive({
@@ -475,6 +484,7 @@ const resetForm = () => {
   if (!skill.value) return
   form.title = skill.value.title
   form.description = skill.value.description || ''
+  form.status = skill.value.status
 }
 
 const onImproveWithAi = async () => {
@@ -587,7 +597,7 @@ const onSave = async () => {
         title: form.title.trim(),
         description: form.description.trim() || null,
         level: skill.value.level,
-        status: skill.value.status
+        status: form.status
       },
       id
     )

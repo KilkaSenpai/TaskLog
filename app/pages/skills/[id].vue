@@ -121,9 +121,9 @@
               <span>Статус</span>
               <UiSelect v-model="form.status" class="w-full min-w-[160px] md:w-[180px]">
                 <option value="planned">Заплановано</option>
-                <option value="active">Активна (в роботі)</option>
-                <option value="paused">Призупинено</option>
-                <option value="done">Виконано</option>
+                <option value="active" :disabled="isBlockedByIncomplete">Активна (в роботі)</option>
+                <option value="paused" :disabled="isBlockedByIncomplete">Призупинено</option>
+                <option value="done"   :disabled="isBlockedByIncomplete">Виконано</option>
                 <option value="archived">Архів</option>
               </UiSelect>
             </label>
@@ -193,7 +193,7 @@
               </UiButton>
             </li>
           </ul>
-          <div v-if="showAddLink" class="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-600 dark:bg-slate-700/50">
+          <div v-if="showAddLink && skill.status !== 'done' && skill.status !== 'archived'" class="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-600 dark:bg-slate-700/50">
             <p class="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">Додати зв’язок</p>
             <form class="grid gap-3" @submit.prevent="onAddLink">
               <label class="grid gap-1 text-sm text-slate-600 dark:text-slate-400">
@@ -227,7 +227,7 @@
             </form>
           </div>
           <UiButton
-            v-else
+            v-else-if="skill.status !== 'done' && skill.status !== 'archived'"
             variant="secondary"
             class="mt-3"
             @click="showAddLink = true"
@@ -235,56 +235,63 @@
             Додати зв’язок
           </UiButton>
         </UiCard>
-        <UiCard class="p-6">
-          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Таймер</h2>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Запустіть таймер і зупиніть — час автоматично додасться в прогрес.
-          </p>
-          <div v-if="isOtherRunning(skill.id)" class="other-timer-notice mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
-            Зараз трекається задача «{{ runningTask?.title }}».
-            <NuxtLink :to="`/skills/${runningTask?.skillId}`" class="font-medium text-amber-900 underline hover:no-underline dark:text-amber-100">
-              Перейти до неї
-            </NuxtLink>
-            або
-            <button type="button" class="font-medium text-amber-900 underline hover:no-underline dark:text-amber-100" @click="onStopOtherTimer">
-              зупинити таймер
-            </button>
-          </div>
-          <template v-else-if="isRunningFor(skill.id)">
-            <div class="mt-4 flex flex-wrap items-center gap-3">
-              <span class="text-2xl font-mono font-semibold tabular-nums text-indigo-600">{{ elapsedFormatted }}</span>
-              <UiButton variant="danger" @click="requestStopTimer">
-                Зупинити
-              </UiButton>
-            </div>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Натисніть «Зупинити» — зʼявиться вікно, де потрібно описати, що робили (мін. 4 символи).
+        <template v-if="skill.status !== 'done' && skill.status !== 'archived'">
+          <UiCard class="p-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Таймер</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Запустіть таймер і зупиніть — час автоматично додасться в прогрес.
             </p>
-          </template>
-          <template v-else>
-            <UiButton class="mt-4" @click="onStartTimer">
-              <Timer :size="18" />
-              Старт таймер
-            </UiButton>
-          </template>
-        </UiCard>
-        <UiCard class="p-6">
-          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Записати прогрес</h2>
-          <form class="mt-4 grid gap-4" @submit.prevent="onLog">
-            <label class="grid gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              Хвилини
-              <UiInput v-model.number="logForm.minutes" type="number" min="1" />
-            </label>
-            <label class="grid gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              Примітка
-              <UiTextarea v-model="logForm.note" rows="3" />
-            </label>
-            <UiButton type="submit" :disabled="logging">
-              {{ logging ? 'Додавання...' : 'Додати запис' }}
-            </UiButton>
-            <p v-if="logError" class="text-sm text-rose-600 dark:text-rose-400">Помилка: {{ logError }}</p>
-          </form>
-        </UiCard>
+            <div v-if="isOtherRunning(skill.id)" class="other-timer-notice mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+              Зараз трекається задача «{{ runningTask?.title }}».
+              <NuxtLink :to="`/skills/${runningTask?.skillId}`" class="font-medium text-amber-900 underline hover:no-underline dark:text-amber-100">
+                Перейти до неї
+              </NuxtLink>
+              або
+              <button type="button" class="font-medium text-amber-900 underline hover:no-underline dark:text-amber-100" @click="onStopOtherTimer">
+                зупинити таймер
+              </button>
+            </div>
+            <template v-else-if="isRunningFor(skill.id)">
+              <div class="mt-4 flex flex-wrap items-center gap-3">
+                <span class="text-2xl font-mono font-semibold tabular-nums text-indigo-600">{{ elapsedFormatted }}</span>
+                <UiButton variant="danger" @click="requestStopTimer">
+                  Зупинити
+                </UiButton>
+              </div>
+              <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Натисніть «Зупинити» — зʼявиться вікно, де потрібно описати, що робили (мін. 4 символи).
+              </p>
+            </template>
+            <template v-else-if="!isTaskInWorkForTimer">
+              <p class="mt-4 text-sm text-slate-600 dark:text-slate-400">
+                Переведіть задачу в «Активна», щоб запустити таймер.
+              </p>
+            </template>
+            <template v-else>
+              <UiButton class="mt-4" @click="onStartTimer">
+                <Timer :size="18" />
+                Старт таймер
+              </UiButton>
+            </template>
+          </UiCard>
+          <UiCard class="p-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Записати прогрес</h2>
+            <form class="mt-4 grid gap-4" @submit.prevent="onLog">
+              <label class="grid gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                Хвилини
+                <UiInput v-model.number="logForm.minutes" type="number" min="1" />
+              </label>
+              <label class="grid gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                Примітка
+                <UiTextarea v-model="logForm.note" rows="3" />
+              </label>
+              <UiButton type="submit" :disabled="logging">
+                {{ logging ? 'Додавання...' : 'Додати запис' }}
+              </UiButton>
+              <p v-if="logError" class="text-sm text-rose-600 dark:text-rose-400">Помилка: {{ logError }}</p>
+            </form>
+          </UiCard>
+        </template>
 
         <UiCard class="p-6 anchor-target" id="logs">
           <div class="flex items-center justify-between gap-3">
@@ -480,6 +487,49 @@ const statusLabel = computed(() => {
   return skill.value ? (map[skill.value.status] ?? skill.value.status) : ''
 })
 
+/** Зв'язки "blocks", де поточна задача — to_skill_id (її хтось блокує) */
+const blockingLinks = computed(() => {
+  const currentId = skill.value?.id
+  if (!currentId) return []
+  return links.value.filter(
+    (l) => l.to_skill_id === currentId && l.link_type === 'blocks'
+  )
+})
+
+/** ID задач, які блокують поточну */
+const blockerSkillIds = computed(() =>
+  blockingLinks.value.map((l) => l.from_skill_id)
+)
+
+/** Блокуючі задачі, які ще не виконані й не в архіві (для повідомлень) */
+const incompleteBlockers = computed(() => {
+  const list = skills.value ?? []
+  return blockerSkillIds.value
+    .map((id) => list.find((s) => s.id === id))
+    .filter((s): s is Skill => !!s && s.status !== 'done' && s.status !== 'archived')
+})
+
+/** Задачу не можна взяти в роботу: є блокери не в статусі Виконано/Архів (або статус блокера невідомий) */
+const isBlockedByIncomplete = computed(() => {
+  if (blockingLinks.value.length === 0) return false
+  const list = skills.value ?? []
+  return blockerSkillIds.value.some((id) => {
+    const s = list.find((sk) => sk.id === id)
+    return !s || (s.status !== 'done' && s.status !== 'archived')
+  })
+})
+
+/** Таймер заблоковано лише якщо задача ще не в роботі; для active/paused таймер доступний */
+const isTimerBlockedByBlocker = computed(
+  () =>
+    isBlockedByIncomplete.value &&
+    skill.value?.status !== 'active' &&
+    skill.value?.status !== 'paused'
+)
+
+/** Таймер доступний лише для статусу «Активна» */
+const isTaskInWorkForTimer = computed(() => skill.value?.status === 'active')
+
 const resetForm = () => {
   if (!skill.value) return
   form.title = skill.value.title
@@ -588,6 +638,14 @@ const onSave = async () => {
     openAuth('login')
     return
   }
+  if (
+    (form.status === 'active' || form.status === 'paused') &&
+    isBlockedByIncomplete.value
+  ) {
+    saveError.value =
+      'Задачу не можна взяти в роботу: її блокують незавершені задачі. Переведіть блокуючі в «Виконано» або «Архів».'
+    return
+  }
   saving.value = true
   saveError.value = null
   try {
@@ -664,6 +722,14 @@ const onToggleFavorite = async () => {
 
 const onStartTimer = () => {
   if (!skill.value) return
+  if (isTimerBlockedByBlocker.value) {
+    pushToast({
+      message:
+        'Задачу не можна взяти в роботу: її блокують незавершені задачі (Виконано або Архів).',
+      tone: 'error'
+    })
+    return
+  }
   startTimer(skill.value.id, skill.value.title)
 }
 

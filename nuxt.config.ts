@@ -5,7 +5,16 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   app: {
-    baseURL: process.env.NODE_ENV === 'production' ? '/TaskLog/' : '/'
+    baseURL: process.env.NODE_ENV === 'production' ? '/TaskLog/' : '/',
+    head: {
+      link: [
+        {
+          rel: 'icon',
+          type: 'image/svg+xml',
+          href: (process.env.NODE_ENV === 'production' ? '/TaskLog/' : '/') + 'favicon.svg'
+        }
+      ]
+    }
   },
   vite: {
     plugins: [tailwindcss()],

@@ -101,6 +101,7 @@
           :is-favorite="favoriteIds.has(skill.id)"
           :log-count="logCountBySkill[skill.id] || 0"
           :total-minutes="totalMinutesBySkill[skill.id] || 0"
+          :is-blocked="blockedSkillIds.has(skill.id)"
           @toggle-favorite="onToggleFavorite(skill.id)"
         />
       </div>
@@ -110,12 +111,13 @@
 </template>
 
 <script setup lang="ts">
-import type { SkillLevel, SkillStatus } from '@/types/skill'
+import type { SkillLevel, SkillLink, SkillStatus } from '@/types/skill'
 
 const { authUser, openAuth } = useAuth()
 const { skills, loading, error, fetchSkills, subscribeToSkills } = useSkills()
 const { logs, loading: logsLoading, fetchLogs, subscribeToLogs } = useLogs()
 const { favorites, fetchFavorites, toggleFavorite } = useFavorites()
+const { fetchLinksBySkillId } = useSkillLinks()
 
 const filters = reactive<{
   status: SkillStatus | 'all'
@@ -133,6 +135,7 @@ const skillsReady = ref(false)
 const logsReady = ref(false)
 const favoritesReady = ref(false)
 const hydrated = ref(false)
+const linksBySkillId = ref<Record<string, SkillLink[]>>({})
 
 const skillsList = computed(() => {
   const list = skills.value ?? []
@@ -160,6 +163,25 @@ const totalMinutesBySkill = computed(() => {
 
 const activeSkills = computed(() => {
   return skillsList.value.filter((skill) => skill.status === 'active').length
+})
+
+/** ID задач, які зараз заблоковані (є незавершені блокери) */
+const blockedSkillIds = computed(() => {
+  const list = skills.value ?? []
+  const linksMap = linksBySkillId.value
+  const blocked = new Set<string>()
+  for (const skill of list) {
+    const skillLinks = linksMap[skill.id] ?? []
+    const blockingLinks = skillLinks.filter(
+      (l) => l.to_skill_id === skill.id && l.link_type === 'blocks'
+    )
+    const hasIncompleteBlocker = blockingLinks.some((l) => {
+      const blocker = list.find((s) => s.id === l.from_skill_id)
+      return !blocker || (blocker.status !== 'done' && blocker.status !== 'archived')
+    })
+    if (hasIncompleteBlocker) blocked.add(skill.id)
+  }
+  return blocked
 })
 
 const weeklyMinutes = computed(() => {
@@ -191,7 +213,8 @@ const refreshAll = async () => {
   const id = authUser.value?.id
   await fetchSkills(filters, id)
   skillsReady.value = true
-  await fetchLogs(undefined, skills.value.map((s) => s.id))
+  await loadLinksForCurrentSkills()
+  await fetchLogs(undefined, (skills.value ?? []).map((s) => s.id))
   logsReady.value = true
   if (process.client && id) {
     await fetchFavorites(id)
@@ -211,10 +234,27 @@ const onToggleFavorite = async (skillId: string) => {
   await toggleFavorite(skillId, id)
 }
 
+const loadLinksForCurrentSkills = async () => {
+  const skillIds = (skills.value ?? []).map((s) => s.id)
+  if (skillIds.length === 0) {
+    linksBySkillId.value = {}
+    return
+  }
+  const results = await Promise.all(
+    skillIds.map((sid) => fetchLinksBySkillId(sid))
+  )
+  const next: Record<string, SkillLink[]> = {}
+  skillIds.forEach((sid, i) => {
+    next[sid] = results[i] ?? []
+  })
+  linksBySkillId.value = next
+}
+
 watch(
   () => ({ ...filters }),
   async () => {
     await fetchSkills(filters, authUser.value?.id)
+    await loadLinksForCurrentSkills()
   }
 )
 
@@ -234,9 +274,12 @@ let stopLogs: (() => void) | null = null
 
 onMounted(() => {
   hydrated.value = true
-  stopSkills = subscribeToSkills(() => fetchSkills(filters, authUser.value?.id))
+  stopSkills = subscribeToSkills(async () => {
+    await fetchSkills(filters, authUser.value?.id)
+    await loadLinksForCurrentSkills()
+  })
   stopLogs = subscribeToLogs(async () => {
-    await fetchLogs(undefined, skills.value.map((s) => s.id))
+    await fetchLogs(undefined, (skills.value ?? []).map((s) => s.id))
   })
 })
 

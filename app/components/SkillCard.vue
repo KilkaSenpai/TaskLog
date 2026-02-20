@@ -69,7 +69,7 @@
         Трекається
       </UiButton>
       <UiButton
-        v-else-if="!isOtherRunning(skill.id)"
+        v-else-if="timerAvailable && !isOtherRunning(skill.id)"
         variant="secondary"
         size="sm"
         class="inline-flex items-center gap-1.5"
@@ -80,7 +80,7 @@
         Старт таймер
       </UiButton>
       <span
-        v-else
+        v-else-if="timerAvailable && isOtherRunning(skill.id)"
         class="text-xs text-slate-500"
         title="Зупиніть таймер іншої задачі в шапці"
       >
@@ -109,13 +109,20 @@ const props = withDefaults(
     totalMinutes: number
     isSubtask?: boolean
     subtaskCount?: number
+    /** Задачу заблоковано — не показувати кнопку «Старт таймер» */
+    isBlocked?: boolean
   }>(),
-  { isSubtask: false, subtaskCount: undefined }
+  { isSubtask: false, subtaskCount: undefined, isBlocked: false }
 )
 
 const router = useRouter()
 const { pushToast } = useToasts()
 const { start: startTimer, isRunningFor, isOtherRunning } = useTaskTimer()
+
+/** Таймер доступний лише для статусу «Активна» (і не заблокована) */
+const timerAvailable = computed(
+  () => props.skill.status === 'active' && !props.isBlocked
+)
 
 const progressPercent = computed(() => {
   const est = props.skill.estimate_minutes

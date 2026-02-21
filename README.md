@@ -134,6 +134,8 @@ NUXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NUXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 # Optional: for AI “improve description” and “suggest subtasks” (get key at https://console.groq.com)
 GROQ_API_KEY=your_groq_api_key
+# Optional: canonical site URL for SEO (e.g. https://yourdomain.com); if unset, request origin is used
+# NUXT_PUBLIC_SITE_URL=https://yourdomain.com
 ```
 
 ### 4. Run

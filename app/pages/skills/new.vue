@@ -111,6 +111,11 @@ import { Info } from 'lucide-vue-next'
 
 definePageMeta({ middleware: ['auth'] })
 
+useSeoMeta({
+  title: 'Нова задача — TaskLog',
+  description: 'Створіть задачу: назва, опис, оцінка часу. AI допоможе сформулювати назву та опис.'
+})
+
 const { authUser, openAuth } = useAuth()
 const { createSkill } = useSkills()
 const { improveTask, improveLoading, improveError } = useAiAssistant()

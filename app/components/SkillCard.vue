@@ -109,7 +109,7 @@ const props = withDefaults(
     totalMinutes: number
     isSubtask?: boolean
     subtaskCount?: number
-    /** Задачу заблоковано — не показувати кнопку «Старт таймер» */
+    /** Task is blocked — do not show "Start timer" button */
     isBlocked?: boolean
   }>(),
   { isSubtask: false, subtaskCount: undefined, isBlocked: false }
@@ -119,7 +119,7 @@ const router = useRouter()
 const { pushToast } = useToasts()
 const { start: startTimer, isRunningFor, isOtherRunning } = useTaskTimer()
 
-/** Таймер доступний лише для статусу «Активна» (і не заблокована) */
+/** Timer is only available for "Active" status (and not blocked) */
 const timerAvailable = computed(
   () => props.skill.status === 'active' && !props.isBlocked
 )

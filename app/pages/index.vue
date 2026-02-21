@@ -17,27 +17,6 @@
       </NuxtLink>
     </div>
 
-    <div v-if="isInitialLoading" class="mt-6 grid gap-4 md:grid-cols-3">
-      <div class="skeleton-card rounded-2xl border border-slate-200 bg-white/80 p-4">
-        <div class="skeleton-line" style="width: 50%"></div>
-        <div class="skeleton-line" style="width: 30%; height: 28px"></div>
-      </div>
-      <div class="skeleton-card rounded-2xl border border-slate-200 bg-white/80 p-4">
-        <div class="skeleton-line" style="width: 55%"></div>
-        <div class="skeleton-line" style="width: 35%; height: 28px"></div>
-      </div>
-      <div class="skeleton-card rounded-2xl border border-slate-200 bg-white/80 p-4">
-        <div class="skeleton-line" style="width: 45%"></div>
-        <div class="skeleton-line" style="width: 25%; height: 28px"></div>
-      </div>
-    </div>
-    <WeeklySummary
-      v-else
-      :minutes="weeklyMinutes"
-      :active-count="activeSkills"
-      :total-count="skillsList.length"
-    />
-
     <section class="mt-8">
       <div v-if="isInitialLoading" class="flex flex-wrap gap-3">
         <div class="skeleton-line h-10 flex-1"></div>
@@ -161,10 +140,6 @@ const totalMinutesBySkill = computed(() => {
   }, {})
 })
 
-const activeSkills = computed(() => {
-  return skillsList.value.filter((skill) => skill.status === 'active').length
-})
-
 /** ID задач, які зараз заблоковані (є незавершені блокери) */
 const blockedSkillIds = computed(() => {
   const list = skills.value ?? []
@@ -182,19 +157,6 @@ const blockedSkillIds = computed(() => {
     if (hasIncompleteBlocker) blocked.add(skill.id)
   }
   return blocked
-})
-
-const weeklyMinutes = computed(() => {
-  if (!logsReady.value) return 0
-  const from = new Date()
-  from.setDate(from.getDate() - 7)
-  return logs.value.reduce((sum, log) => {
-    const createdAt = new Date(log.created_at)
-    if (createdAt >= from) {
-      return sum + (log.minutes || 0)
-    }
-    return sum
-  }, 0)
 })
 
 const isInitialLoading = computed(() => {
@@ -271,6 +233,20 @@ watch(
 
 let stopSkills: (() => void) | null = null
 let stopLogs: (() => void) | null = null
+
+const route = useRoute()
+const previousPath = ref('')
+watch(
+  () => route.path,
+  (path) => {
+    const was = previousPath.value
+    previousPath.value = path
+    if (path === '/' && was === '/analytics') {
+      refreshAll()
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   hydrated.value = true

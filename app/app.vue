@@ -22,6 +22,12 @@
             <Sun v-else class="h-4 w-4" />
           </button>
           <template v-if="isLoggedIn">
+            <NuxtLink
+              to="/analytics"
+              class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600"
+            >
+              Аналітика
+            </NuxtLink>
             <button
               type="button"
               class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 cursor-pointer"

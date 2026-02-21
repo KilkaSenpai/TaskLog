@@ -50,6 +50,30 @@ export const useLogs = () => {
     return (data ?? []) as SkillLog[]
   }
 
+  /** Fetches logs for given skill IDs without updating global state. For analytics. */
+  const fetchLogsForSkillIds = async (
+    skillIds: string[],
+    options?: { since?: string }
+  ): Promise<SkillLog[]> => {
+    if (skillIds.length === 0) return []
+
+    let query = supabase
+      .from('skill_logs')
+      .select('*')
+      .in('skill_id', skillIds)
+      .order('created_at', { ascending: false })
+
+    if (options?.since) {
+      query = query.gte('created_at', options.since)
+    }
+
+    const { data, error: fetchError } = await query
+    if (fetchError) {
+      throw new Error(fetchError.message)
+    }
+    return (data ?? []) as SkillLog[]
+  }
+
   const createLog = async (payload: {
     skill_id: string
     note: string | null
@@ -103,6 +127,7 @@ export const useLogs = () => {
     error,
     fetchLogs,
     fetchLogsSince,
+    fetchLogsForSkillIds,
     createLog,
     deleteLog,
     subscribeToLogs

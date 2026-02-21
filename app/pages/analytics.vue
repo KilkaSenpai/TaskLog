@@ -55,6 +55,11 @@ import type { SkillLog } from '@/types/skill'
 
 definePageMeta({ middleware: ['auth'] })
 
+useSeoMeta({
+  title: 'Аналітика — TaskLog',
+  description: 'Час, витрачений на задачі — графіки по днях, тижнях та місяцях.'
+})
+
 const { authUser } = useAuth()
 const { skills, fetchSkills } = useSkills()
 const { fetchLogsForSkillIds } = useLogs()

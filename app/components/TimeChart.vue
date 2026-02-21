@@ -11,7 +11,7 @@ const props = defineProps<{
   isDark: boolean
 }>()
 
-/** Форматує хвилини як "1h 22m" або "45m" */
+/** Formats minutes as "1h 22m" or "45m" */
 function formatMinutesAsHours(minutes: number): string {
   const m = Math.round(minutes)
   if (m < 60) return `${m} хв`

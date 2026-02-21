@@ -92,6 +92,11 @@
 <script setup lang="ts">
 import type { SkillLevel, SkillLink, SkillStatus } from '@/types/skill'
 
+useSeoMeta({
+  title: 'TaskLog',
+  description: 'Створюйте задачі, логуйте прогрес і переглядайте тижневі підсумки.'
+})
+
 const { authUser, openAuth } = useAuth()
 const { skills, loading, error, fetchSkills, subscribeToSkills } = useSkills()
 const { logs, loading: logsLoading, fetchLogs, subscribeToLogs } = useLogs()
@@ -140,7 +145,7 @@ const totalMinutesBySkill = computed(() => {
   }, {})
 })
 
-/** ID задач, які зараз заблоковані (є незавершені блокери) */
+/** IDs of tasks that are currently blocked (have incomplete blockers) */
 const blockedSkillIds = computed(() => {
   const list = skills.value ?? []
   const linksMap = linksBySkillId.value

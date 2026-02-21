@@ -239,32 +239,6 @@ watch(
   { immediate: false }
 )
 
-const hasActiveSkill = computed(() => {
-  return (skills.value ?? []).some((skill) => skill.status === 'active')
-})
-
-const hasLogToday = computed(() => {
-  const start = new Date()
-  start.setHours(0, 0, 0, 0)
-  return (logs.value ?? []).some((log) => new Date(log.created_at) >= start)
-})
-
-const showLogReminder = () => {
-  if (hasActiveSkill.value && !hasLogToday.value) {
-    pushToast({
-      title: 'Час для логу',
-      message: 'У вас є активні задачі, але сьогодні ще немає записів.',
-      tone: 'warning'
-    })
-  }
-}
-
-const onMouseLeave = (event: MouseEvent) => {
-  if (event.clientY <= 0) {
-    showLogReminder()
-  }
-}
-
 onMounted(async () => {
   if (process.client) {
     const stored = localStorage.getItem('tasklog-theme')
@@ -287,11 +261,5 @@ onMounted(async () => {
       await fetchLogs(undefined, skillIds)
     }
   }
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      showLogReminder()
-    }
-  })
-  document.addEventListener('mouseleave', onMouseLeave)
 })
 </script>

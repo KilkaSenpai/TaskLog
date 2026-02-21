@@ -30,7 +30,9 @@ export default defineNuxtConfig({
     groqApiKey: process.env.GROQ_API_KEY || process.env.NUXT_GROQ_API_KEY || '',
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
-      supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      /** Canonical site origin (e.g. https://example.com). If unset, request origin is used. */
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || ''
     }
   },
   routeRules: {

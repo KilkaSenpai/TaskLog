@@ -71,6 +71,11 @@
 </template>
 
 <script setup lang="ts">
+useSeoMeta({
+  title: 'Новий пароль — TaskLog',
+  description: 'Введіть новий пароль для облікового запису після скидання.'
+})
+
 const supabase = useSupabase()
 const { authUser, openAuth, pushToast } = useAuth()
 const router = useRouter()

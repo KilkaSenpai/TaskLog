@@ -391,6 +391,20 @@ const { pushToast } = useToasts()
 
 const skill = ref<Skill | null>(null)
 const links = ref<SkillLink[]>([])
+
+const pageTitle = computed(
+  () => (skill.value?.title ? `${skill.value.title} — TaskLog` : 'Задача — TaskLog')
+)
+const pageDescription = computed(() =>
+  skill.value?.description
+    ? skill.value.description.slice(0, 160)
+    : 'Деталі задачі та прогрес у TaskLog.'
+)
+useHead({
+  title: pageTitle,
+  meta: [{ name: 'description', content: pageDescription }]
+})
+
 const linksLoading = ref(false)
 const loadingSkill = ref(true)
 const skillError = ref<string | null>(null)
@@ -487,7 +501,7 @@ const statusLabel = computed(() => {
   return skill.value ? (map[skill.value.status] ?? skill.value.status) : ''
 })
 
-/** Зв'язки "blocks", де поточна задача — to_skill_id (її хтось блокує) */
+/** "blocks" links where the current task is to_skill_id (it is being blocked) */
 const blockingLinks = computed(() => {
   const currentId = skill.value?.id
   if (!currentId) return []
@@ -496,12 +510,12 @@ const blockingLinks = computed(() => {
   )
 })
 
-/** ID задач, які блокують поточну */
+/** IDs of tasks that block the current one */
 const blockerSkillIds = computed(() =>
   blockingLinks.value.map((l) => l.from_skill_id)
 )
 
-/** Блокуючі задачі, які ще не виконані й не в архіві (для повідомлень) */
+/** Blocking tasks that are not done/archived (for messages) */
 const incompleteBlockers = computed(() => {
   const list = skills.value ?? []
   return blockerSkillIds.value
@@ -509,7 +523,7 @@ const incompleteBlockers = computed(() => {
     .filter((s): s is Skill => !!s && s.status !== 'done' && s.status !== 'archived')
 })
 
-/** Задачу не можна взяти в роботу: є блокери не в статусі Виконано/Архів (або статус блокера невідомий) */
+/** Task cannot be started: it has blockers not in Done/Archived (or blocker status unknown) */
 const isBlockedByIncomplete = computed(() => {
   if (blockingLinks.value.length === 0) return false
   const list = skills.value ?? []
@@ -519,7 +533,7 @@ const isBlockedByIncomplete = computed(() => {
   })
 })
 
-/** Таймер заблоковано лише якщо задача ще не в роботі; для active/paused таймер доступний */
+/** Timer is blocked only if task is not in progress; for active/paused timer is available */
 const isTimerBlockedByBlocker = computed(
   () =>
     isBlockedByIncomplete.value &&
@@ -527,7 +541,7 @@ const isTimerBlockedByBlocker = computed(
     skill.value?.status !== 'paused'
 )
 
-/** Таймер доступний лише для статусу «Активна» */
+/** Timer is only available when status is "Active" */
 const isTaskInWorkForTimer = computed(() => skill.value?.status === 'active')
 
 const resetForm = () => {

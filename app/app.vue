@@ -2,19 +2,20 @@
   <div class="min-h-screen">
     <NuxtRouteAnnouncer />
     <header
-      class="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur"
+      class="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80"
     >
-      <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <NuxtLink to="/" class="flex items-center gap-2 text-lg font-semibold text-slate-900">
+      <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <NuxtLink to="/" class="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
           <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white">
             T
           </span>
           TaskLog
         </NuxtLink>
-        <nav class="flex items-center gap-1 sm:gap-2">
+        <!-- Десктоп: навігація в шапці -->
+        <nav class="hidden items-center gap-1 sm:gap-2 md:flex">
           <button
             type="button"
-            class="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-white/80 text-slate-600 shadow-sm transition-colors hover:bg-slate-100 cursor-pointer"
+            class="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-white/80 text-slate-600 shadow-sm transition-colors hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
             :aria-label="theme === 'dark' ? 'Переключити на світлу тему' : 'Переключити на темну тему'"
             @click="toggleTheme"
           >
@@ -24,13 +25,13 @@
           <template v-if="isLoggedIn">
             <NuxtLink
               to="/analytics"
-              class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600"
+              class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
             >
               Аналітика
             </NuxtLink>
             <button
               type="button"
-              class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 cursor-pointer"
+              class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 cursor-pointer"
               @click="onLogout"
             >
               Вийти
@@ -39,7 +40,7 @@
           <template v-else>
             <button
               type="button"
-              class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 cursor-pointer"
+              class="px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 cursor-pointer"
               @click="openAuth('login')"
             >
               Увійти
@@ -53,8 +54,94 @@
             </button>
           </template>
         </nav>
+        <!-- Мобільне: кнопка меню -->
+        <button
+          type="button"
+          class="header-mobile-menu-btn inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 md:hidden cursor-pointer"
+          aria-label="Відкрити меню"
+          :aria-expanded="mobileMenuOpen"
+          @click="mobileMenuOpen = true"
+        >
+          <Menu class="h-5 w-5" />
+        </button>
       </div>
     </header>
+
+    <!-- Мобільне меню: виїжджає справа -->
+    <Teleport to="body">
+      <Transition name="mobile-menu-backdrop">
+        <div
+          v-if="mobileMenuOpen"
+          class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm md:hidden"
+          aria-hidden="true"
+          @click="mobileMenuOpen = false"
+        />
+      </Transition>
+      <Transition name="mobile-menu-panel">
+        <aside
+          v-if="mobileMenuOpen"
+          class="header-mobile-panel fixed right-0 top-0 z-50 flex h-full w-full max-w-[min(20rem,85vw)] flex-col border-l border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900 md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Меню"
+        >
+          <div class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-4 dark:border-slate-700">
+            <span class="text-lg font-semibold text-slate-900 dark:text-white">Меню</span>
+            <button
+              type="button"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white cursor-pointer"
+              aria-label="Закрити меню"
+              @click="mobileMenuOpen = false"
+            >
+              <X class="h-5 w-5" />
+            </button>
+          </div>
+          <nav class="flex flex-1 flex-col gap-1 overflow-auto p-4">
+            <button
+              type="button"
+              class="flex items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+              @click="toggleTheme()"
+            >
+              <Moon v-if="theme === 'dark'" class="h-5 w-5 shrink-0" />
+              <Sun v-else class="h-5 w-5 shrink-0" />
+              <span>{{ theme === 'dark' ? 'Світла тема' : 'Темна тема' }}</span>
+            </button>
+            <template v-if="isLoggedIn">
+              <NuxtLink
+                to="/analytics"
+                class="rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+                @click="mobileMenuOpen = false"
+              >
+                Аналітика
+              </NuxtLink>
+              <button
+                type="button"
+                class="rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                @click="onLogout(); mobileMenuOpen = false"
+              >
+                Вийти
+              </button>
+            </template>
+            <template v-else>
+              <button
+                type="button"
+                class="rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                @click="openAuth('login'); mobileMenuOpen = false"
+              >
+                Увійти
+              </button>
+              <button
+                type="button"
+                class="rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 cursor-pointer"
+                @click="openAuth('register'); mobileMenuOpen = false"
+              >
+                Реєстрація
+              </button>
+            </template>
+          </nav>
+        </aside>
+      </Transition>
+    </Teleport>
     <div
       v-if="runningTask"
       class="timer-bar sticky top-16 z-10 border-b border-slate-200 bg-indigo-50/90 py-2 backdrop-blur"
@@ -129,7 +216,7 @@
 </template>
 
 <script setup lang="ts">
-import { Moon, Sun } from 'lucide-vue-next'
+import { Menu, Moon, Sun, X } from 'lucide-vue-next'
 
 const route = useRoute()
 const { authUser, initAuth, openAuth, logout } = useAuth()
@@ -151,6 +238,7 @@ const { isOpen: stopTimerModalOpen, capturedTask: capturedStopTask, requestStop:
 
 const stopTimerNote = ref('')
 const stopTimerSaving = ref(false)
+const mobileMenuOpen = ref(false)
 
 const onLogout = async () => {
   stopTimer()
@@ -239,6 +327,20 @@ watch(
   { immediate: false }
 )
 
+watch(mobileMenuOpen, (open) => {
+  if (process.client && open) {
+    document.body.classList.add('overflow-hidden')
+  } else if (process.client) {
+    document.body.classList.remove('overflow-hidden')
+  }
+})
+
+onBeforeUnmount(() => {
+  if (process.client) {
+    document.body.classList.remove('overflow-hidden')
+  }
+})
+
 onMounted(async () => {
   if (process.client) {
     const stored = localStorage.getItem('tasklog-theme')
@@ -263,3 +365,25 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+/* Backdrop: поява / зникнення */
+.mobile-menu-backdrop-enter-active,
+.mobile-menu-backdrop-leave-active {
+  transition: opacity 0.2s ease;
+}
+.mobile-menu-backdrop-enter-from,
+.mobile-menu-backdrop-leave-to {
+  opacity: 0;
+}
+
+/* Панель: виїзд справа */
+.mobile-menu-panel-enter-active,
+.mobile-menu-panel-leave-active {
+  transition: transform 0.25s ease-out;
+}
+.mobile-menu-panel-enter-from,
+.mobile-menu-panel-leave-to {
+  transform: translateX(100%);
+}
+</style>

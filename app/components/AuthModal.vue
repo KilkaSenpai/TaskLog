@@ -10,7 +10,7 @@
         >
           <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
             <h2 class="text-base font-semibold text-slate-900">
-              {{ authMode === 'login' ? 'Вхід до TaskLog' : 'Реєстрація в TaskLog' }}
+              {{ pendingConfirmationEmail ? 'Підтвердження email' : (authMode === 'login' ? 'Вхід до TaskLog' : 'Реєстрація в TaskLog') }}
             </h2>
             <button
               type="button"
@@ -22,7 +22,34 @@
             </button>
           </div>
 
-          <div class="px-6 pt-4">
+          <div v-if="pendingConfirmationEmail" class="px-6 py-6 space-y-4">
+            <p class="text-sm text-slate-600">
+              Лист для підтвердження надіслано на <strong>{{ pendingConfirmationEmail }}</strong>. Перевірте пошту та перейдіть за посиланням для підтвердження.
+            </p>
+            <p class="text-sm text-slate-500">
+              Якщо листа немає — перевірте папку «Спам» або натисніть кнопку нижче, щоб надіслати лист повторно.
+            </p>
+            <button
+              type="button"
+              class="flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+              :disabled="isAuthLoading"
+              @click="resendConfirmationEmail(pendingConfirmationEmail)"
+            >
+              {{ isAuthLoading ? 'Надсилання...' : 'Надіслати лист повторно' }}
+            </button>
+            <p class="text-center text-xs text-slate-500">
+              Після підтвердження
+              <button
+                type="button"
+                class="font-medium text-indigo-600 hover:text-indigo-700 cursor-pointer"
+                @click="switchToLoginFromPending"
+              >
+                увійдіть у свій обліковий запис
+              </button>.
+            </p>
+          </div>
+
+          <div v-else class="px-6 pt-4">
             <div class="auth-modal-tabs mb-4 flex rounded-full bg-slate-100 p-1 text-sm font-medium text-slate-600">
               <button
                 type="button"
@@ -51,7 +78,7 @@
             </div>
           </div>
 
-          <div class="px-6 pb-6">
+          <div v-if="!pendingConfirmationEmail" class="px-6 pb-6">
             <form
               v-if="authMode === 'login'"
               class="space-y-4"
@@ -232,11 +259,13 @@ const {
   isAuthModalOpen,
   authMode,
   isAuthLoading,
+  pendingConfirmationEmail,
   setMode,
   closeAuth,
   login,
   register,
-  resetPassword
+  resetPassword,
+  resendConfirmationEmail
 } = useAuth()
 
 const { pushToast } = useToasts()
@@ -361,6 +390,11 @@ const handleRegister = async () => {
 
 const switchToRegisterFromLogin = () => {
   setMode('register')
+}
+
+function switchToLoginFromPending() {
+  pendingConfirmationEmail.value = null
+  setMode('login')
 }
 
 const copyToClipboard = async (value: string) => {

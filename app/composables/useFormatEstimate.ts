@@ -1,5 +1,5 @@
 /**
- * Formats minutes for display (output uses Ukrainian unit labels: год, хв).
+ * Formats minutes for display (output: year/hour and minute labels).
  */
 export function formatEstimateMinutes(minutes: number): string {
   if (minutes <= 0) return '0 хв'

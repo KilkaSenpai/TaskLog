@@ -179,7 +179,7 @@ export const useAuth = () => {
 
       // Keep user as guest and show modal with confirmation hint
       pendingConfirmationEmail.value = email
-      if (import.meta.client) {
+      if (typeof window !== 'undefined') {
         await navigateTo('/')
       }
       pushToast({
@@ -345,6 +345,89 @@ export const useAuth = () => {
     })
   }
 
+  const getAuthCallbackUrl = (): string => {
+    if (typeof window === 'undefined') return ''
+    const config = useRuntimeConfig()
+    const base = (config.app?.baseURL as string) || '/'
+    const path = base === '/' ? '/auth/callback' : `${base.replace(/\/$/, '')}/auth/callback`
+    return `${window.location.origin}${path}`
+  }
+
+  const signInWithGoogle = async () => {
+    if (typeof window === 'undefined') return
+    isAuthLoading.value = true
+    try {
+      const redirectTo = getAuthCallbackUrl()
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
+        }
+      })
+      if (error) {
+        handleAuthError(error)
+        return
+      }
+      if (data?.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      pushToast({
+        message: 'Сталася помилка під час входу через Google.',
+        tone: 'danger'
+      })
+    } finally {
+      isAuthLoading.value = false
+    }
+  }
+
+  /** Ensure profiles row exists for current user (e.g. after OAuth sign-in). */
+  const ensureProfileForOAuthUser = async (): Promise<boolean> => {
+    const user = authUser.value
+    if (!user?.id) return false
+
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (existing) return true
+
+    const email = user.email ?? ''
+    let baseName = email.split('@')[0] ?? 'user'
+    baseName = baseName.replace(/[^A-Za-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'user'
+    if (baseName.length < 3) baseName = `${baseName}${user.id.slice(0, 6)}`
+
+    let username = baseName.slice(0, 32)
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const { data: conflict } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('username', username)
+        .limit(1)
+        .maybeSingle()
+
+      if (!conflict) break
+      const suffix = `${user.id.slice(0, 4).replace(/-/g, '')}${attempt}`
+      username = `${baseName.slice(0, 26)}_${suffix}`.slice(0, 32)
+    }
+
+    const { error } = await supabase.from('profiles').insert({
+      user_id: user.id,
+      username,
+      email: email || null,
+      display_name: (user.user_metadata?.full_name as string) || null
+    })
+
+    if (error) return false
+    return true
+  }
+
   const initAuth = async () => {
     if (!process.client) return
 
@@ -383,7 +466,9 @@ export const useAuth = () => {
     logout,
     resendConfirmationEmail,
     resetPassword,
-    initAuth
+    initAuth,
+    signInWithGoogle,
+    ensureProfileForOAuthUser
   }
 }
 

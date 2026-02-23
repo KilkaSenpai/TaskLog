@@ -37,16 +37,6 @@
             >
               {{ isAuthLoading ? 'Надсилання...' : 'Надіслати лист повторно' }}
             </button>
-            <p class="text-center text-xs text-slate-500">
-              Після підтвердження
-              <button
-                type="button"
-                class="font-medium text-indigo-600 hover:text-indigo-700 cursor-pointer"
-                @click="switchToLoginFromPending"
-              >
-                увійдіть у свій обліковий запис
-              </button>.
-            </p>
           </div>
 
           <div v-else class="px-6 pt-4">
@@ -390,11 +380,6 @@ const handleRegister = async () => {
 
 const switchToRegisterFromLogin = () => {
   setMode('register')
-}
-
-function switchToLoginFromPending() {
-  pendingConfirmationEmail.value = null
-  setMode('login')
 }
 
 const copyToClipboard = async (value: string) => {

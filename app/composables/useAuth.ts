@@ -356,11 +356,15 @@ export const useAuth = () => {
     if (!error && session) {
       authSession.value = session
       authUser.value = session.user
+      pendingConfirmationEmail.value = null
     }
 
     supabase.auth.onAuthStateChange((_event, sessionChange) => {
       authSession.value = sessionChange
       authUser.value = sessionChange?.user ?? null
+      if (sessionChange?.user) {
+        pendingConfirmationEmail.value = null
+      }
     })
   }
 

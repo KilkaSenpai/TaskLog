@@ -32,8 +32,14 @@ export const useAuth = () => {
     isAuthModalOpen.value = true
   }
 
+  const pendingConfirmationEmail = useState<string | null>(
+    'pending-confirmation-email',
+    () => null
+  )
+
   const closeAuth = () => {
     isAuthModalOpen.value = false
+    pendingConfirmationEmail.value = null
   }
 
   const setMode = (mode: AuthMode) => {
@@ -44,10 +50,29 @@ export const useAuth = () => {
     if (!error) return
 
     const msg = error.message?.toLowerCase() ?? ''
+    const code = (error as AuthError & { code?: string }).code ?? ''
 
-    if (msg.includes('email') || msg.includes('already registered') || error.message?.includes('already been registered')) {
+    // Only treat as duplicate email when error clearly indicates it
+    if (
+      msg.includes('already registered') ||
+      msg.includes('already been registered') ||
+      msg.includes('user already exists') ||
+      code === 'user_already_exists'
+    ) {
       pushToast({
         message: 'Email вже зареєстрований',
+        tone: 'danger'
+      })
+      return
+    }
+
+    // Confirmation email send failed (e.g. SMTP not configured)
+    if (
+      code === 'unexpected_failure' ||
+      msg.includes('error sending confirmation email')
+    ) {
+      pushToast({
+        message: 'Не вдалося надіслати лист підтвердження. Спробуйте пізніше або перевірте налаштування email у проєкті Supabase.',
         tone: 'danger'
       })
       return
@@ -56,6 +81,18 @@ export const useAuth = () => {
     if (msg.includes('invalid login credentials')) {
       pushToast({
         message: 'Невірні дані для входу.',
+        tone: 'danger'
+      })
+      return
+    }
+
+    // Login with unconfirmed email (Supabase: Confirm email enabled)
+    if (
+      msg.includes('email not confirmed') ||
+      code === 'email_not_confirmed'
+    ) {
+      pushToast({
+        message: 'Ця пошта не пройшла верифікацію. Будь ласка, перевірте пошту та перейдіть за посиланням для верифікації.',
         tone: 'danger'
       })
       return
@@ -140,14 +177,16 @@ export const useAuth = () => {
         })
       }
 
-      authUser.value = user
-
+      // Keep user as guest and show modal with confirmation hint
+      pendingConfirmationEmail.value = email
+      if (import.meta.client) {
+        await navigateTo('/')
+      }
       pushToast({
-        message: 'Реєстрація успішна! Перевірте email для підтвердження, якщо потрібно.',
+        message: 'Реєстрація успішна! Перевірте вашу пошту. Перейдіть за посиланням для підтвердження.',
         tone: 'success'
       })
-
-      closeAuth()
+      // Keep modal open with hint and resend button
     } catch (error) {
       pushToast({
         message: 'Сталася неочікувана помилка під час реєстрації.',
@@ -216,6 +255,7 @@ export const useAuth = () => {
 
       authUser.value = data.user
       authSession.value = data.session ?? null
+      pendingConfirmationEmail.value = null
 
       pushToast({
         message: 'Вхід виконано.',
@@ -252,6 +292,27 @@ export const useAuth = () => {
 
       pushToast({
         message: 'Ви вийшли з облікового запису.',
+        tone: 'success'
+      })
+    } finally {
+      isAuthLoading.value = false
+    }
+  }
+
+  const resendConfirmationEmail = async (email: string) => {
+    if (!email?.trim()) return
+    isAuthLoading.value = true
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim()
+      })
+      if (error) {
+        handleAuthError(error)
+        return
+      }
+      pushToast({
+        message: 'Лист для підтвердження надіслано повторно. Перевірте пошту.',
         tone: 'success'
       })
     } finally {
@@ -309,12 +370,14 @@ export const useAuth = () => {
     isAuthModalOpen,
     authMode,
     isAuthLoading,
+    pendingConfirmationEmail,
     openAuth,
     closeAuth,
     setMode,
     register,
     login,
     logout,
+    resendConfirmationEmail,
     resetPassword,
     initAuth
   }

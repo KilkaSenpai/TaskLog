@@ -367,7 +367,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Backdrop: поява / зникнення */
+/* Backdrop: show / hide */
 .mobile-menu-backdrop-enter-active,
 .mobile-menu-backdrop-leave-active {
   transition: opacity 0.2s ease;
@@ -377,7 +377,7 @@ onMounted(async () => {
   opacity: 0;
 }
 
-/* Панель: виїзд справа */
+/* Panel: slide in from right */
 .mobile-menu-panel-enter-active,
 .mobile-menu-panel-leave-active {
   transition: transform 0.25s ease-out;

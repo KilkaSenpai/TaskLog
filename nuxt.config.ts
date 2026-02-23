@@ -37,6 +37,7 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/': { ssr: false },
+    '/auth/callback': { ssr: false },
     '/skills/**': { ssr: false }
   }
 })
